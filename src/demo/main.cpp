@@ -8,6 +8,7 @@
 #include "star_bmp.h"
 #include "hex2surface.h"
 #include "image.h"
+#include "font-16x16-1520x16.h"
 #include "stars.h"
 #include "moddata.h"
 #include "xmp.h"
@@ -22,6 +23,7 @@ const float SCROLLER_SPEED = 3.67;
 const int SCROLLER_TEXT_HEIGHT = 32;
 const int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
 const std::string SCROLLER_TEXT[] = { "HERES A PROOF OF CONCEPT DEMO", "FOR SOME VAMPIRIZED AMIGAS", "MADE BY MARLON BEIJER" };
+const int SCROLLER_TEXT_LEN = sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEXT[0]);
 const int FRAMES_PER_SECOND = 60;
 const int STAR_MAX = WIDTH / 15;
 const int STAR_RND[] = { 1, 2, 4, 6 };
@@ -179,7 +181,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 8, SDL_HWSURFACE | SDL_FULLSCREEN );
+	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE | SDL_FULLSCREEN );
 
 	if ( screen == NULL )
 	{
@@ -188,13 +190,16 @@ int main ( int argc, const char* argv[] )
 
 	star_randomize();
 
-	SDL_Surface *fontImg = Hex2Surface(image, 864, 32);
+	SDL_Surface *font = Hex2Surface(image, 864, 32);
+	SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
 
-	SDL_Surface *font = SDL_DisplayFormat(fontImg);
-	SDL_FreeSurface( fontImg );
+	font = SDL_DisplayFormat(font);
+	font2 = SDL_DisplayFormat(font2);
+	//SDL_FreeSurface( fontImg );
 
 	SDL_SetColorKey( font, SDL_SRCCOLORKEY, SDL_MapRGB( font->format, 255, 0, 255) );
+	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font->format, 255, 0, 255) );
 
 	SDL_Event event;
 
@@ -202,6 +207,7 @@ int main ( int argc, const char* argv[] )
 	float scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
+	int scnCnt = 0;
 	const int sin_pos[] = {4,4,5,6,7,8,10,12,14,16,19,22,25,28,32,36,40,44,49,54,59,65,71,77,83,89,94,99,104,109,113,117,121,125,128,131,134,137,139,141,143,145,146,147,148,149,149,149,149,148,147,146,145,143,141,139,137,134,131,128,125,121,117,113,109,104,99,94,89,83,77,71,65,59,54,49,44,40,36,32,28,25,22,19,16,14,12,10,8,7,6,5,4,4};
 	const int sin_len = sizeof(sin_pos)/sizeof(sin_pos[0]);
 
@@ -267,33 +273,43 @@ int main ( int argc, const char* argv[] )
 		box.h = ( SCROLLER_Y_TOP ) - 1;
 		SDL_FillRect( screen, &box, 0xFF0000 );
 
-		for ( const char& c : SCROLLER_TEXT[textCnt] )
+		if (scnCnt == 0)
 		{
-			int fnt = c - 64;
-			int offsetY = 0;
-
-			offsetY = sin_cnt + i;
-
-			if ( offsetY >= sin_len )
-				offsetY -= sin_len;
-
-			offsetY = sin_pos[offsetY] - (149/2);
-
-			if ( (32*i) - scr < WIDTH  && (32*i) - scr > -32 )
+			for ( const char& c : SCROLLER_TEXT[textCnt] )
 			{
-				blit( font, screen, 32*fnt, 0, (32*i)-scr, SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
+				int fnt = c - 64;
+				int offsetY = 0;
+
+				offsetY = sin_cnt + i;
+
+				if ( offsetY >= sin_len )
+					offsetY -= sin_len;
+
+				offsetY = sin_pos[offsetY] - (149/2);
+
+				if ( (32*i) - scr < WIDTH  && (32*i) - scr > -32 )
+				{
+					blit( font, screen, 32*fnt, 0, (32*i)-scr, SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
+				}
+
+				if ( (16*i) - scr < WIDTH  && (16*i) - scr > -16 )
+				{
+					blit( font2, screen, 16*(fnt+32), 0, (16*i)-scr, 0, 16, 16 );
+				}
+
+				i++;
 			}
 
-
-			i++;
-		}
-
-
-		scr = scr + SCROLLER_SPEED;
-		if ( scr > SCROLLER_TEXT[textCnt].size()*32 )
-		{
-			scr = -WIDTH;
-			if (++textCnt >= sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEXT[0]) ) textCnt = 0;
+			scr = scr + SCROLLER_SPEED;
+			if ( scr > SCROLLER_TEXT[textCnt].size()*32 )
+			{
+				scr = -WIDTH;
+				if (++textCnt >= SCROLLER_TEXT_LEN)
+				{
+					textCnt = 0;
+					++scnCnt;
+				}
+			}
 		}
 
 		SDL_Flip(screen);
@@ -313,6 +329,7 @@ int main ( int argc, const char* argv[] )
 	SDL_CloseAudio();
 	SDL_FreeSurface(stars);
 	SDL_FreeSurface(font);
+	SDL_FreeSurface(font2);
 
 	SDL_Quit();
 
