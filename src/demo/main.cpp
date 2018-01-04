@@ -179,7 +179,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE | SDL_FULLSCREEN );
+	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 8, SDL_HWSURFACE | SDL_FULLSCREEN );
 
 	if ( screen == NULL )
 	{
@@ -187,10 +187,6 @@ int main ( int argc, const char* argv[] )
 	}
 
 	star_randomize();
-
-	float deltaTime = 0.0;
-	int thisTime = 0;
-	int lastTime = 0;
 
 	SDL_Surface *fontImg = Hex2Surface(image, 864, 32);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
@@ -224,10 +220,6 @@ int main ( int argc, const char* argv[] )
 	{
 		//Start the frame timer
 		fps.start();
-
-		thisTime = SDL_GetTicks();
-		deltaTime = (float)(thisTime - lastTime) / 1000;
-		lastTime = thisTime;
 
 		if (SDL_PollEvent(&event))
 		{
@@ -297,7 +289,7 @@ int main ( int argc, const char* argv[] )
 		}
 
 
-		scr = scr + SCROLLER_SPEED;// * deltaTime);
+		scr = scr + SCROLLER_SPEED;
 		if ( scr > SCROLLER_TEXT[textCnt].size()*32 )
 		{
 			scr = -WIDTH;
