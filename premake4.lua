@@ -78,16 +78,17 @@ end
 
 solution "amiga-demo-test"
 	configurations { "Release", "Release-noFPU", "Debug" }
---	platforms { "m68k-amigaos", "ppc-amigaos", "ppc-morphos", "x86_64-aros", "ppc-macos" }
+	platforms { "m68k-amigaos", "ppc-amigaos", "ppc-morphos", "x86_64-aros", "ppc-macos", "Native" }
 	includedirs { "./", "./include", "./src/demo" }
 	defines { "HAVE_CONFIG_H", "__THREADTIMER__", "DRIVER_UNIX", "__FORCE_SDL_AUDIO__" }
 
 	configuration "m68k-amigaos"
-		buildoptions "-m68020-60 -msoft-float -O3 -fomit-frame-pointer -fno-exceptions -s -noixemul"
+		buildoptions "-m68040 -mhard-float -O3 -fomit-frame-pointer -fno-exceptions -s -noixemul"
 		linkoptions { "-noixemul", "-ldebug", "-Xlinker --allow-multiple-definition" }
 		includedirs { "/opt/m68k-amigaos/m68k-amigaos/sys-include", "/opt/m68k-amigaos/include", "/opt/m68k-amigaos/include/SDL" }
 		libdirs { "/opt/m68k-amigaos/lib", "/opt/m68k-amigaos/m68k-amigaos/lib", "/opt/m68k-amigaos/m68k-amigaos/libnix/lib/libnix" }
 		defines { "AMIGA", "__AMIGA__" }
+		excludes { "./src/demo/SDLMain.*" }
 
 	configuration "ppc-morphos"
 		buildoptions "-O3 -fomit-frame-pointer -fno-exceptions -s -noixemul"
@@ -125,9 +126,10 @@ solution "amiga-demo-test"
 		targetdir "./bin"
 		targetname "demo"
 		files { "./src/demo/*" }
+		excludes { "./src/demo/SDLMain.*" }
 		--includedirs { "../milkytracker-68k-master/src/milkyplay", "../milkytracker-68k-master/src/milkyplay/drivers/sdl" }
 		libdirs { "./lib" }
-		links { "SDL" }
+		links { "xmp", "SDL" }
 		flags { "Symbols" }
 		buildoptions "-fno-rtti"
 

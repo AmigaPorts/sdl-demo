@@ -26,7 +26,7 @@ extern "C" {
 #elif defined(EMSCRIPTEN)
 # define EXPORT EMSCRIPTEN_KEEPALIVE
 #else
-# define EXPORT 
+# define EXPORT
 #endif
 
 #define XMP_NAME_SIZE		64	/* Size of module name and type */

@@ -1,14 +1,15 @@
 // Marlon Beijer, Demo SDL-1.2 Test
 
 #include <SDL.h>
-#include "SDL_rotozoom.h"
 #include <iostream>
+#include <math.h>
 #include <string>
 #include "timer.h"
 #include "star_bmp.h"
 #include "hex2surface.h"
 #include "image.h"
 #include "stars.h"
+#include "moddata.h"
 #include "xmp.h"
 #ifdef __OSX__
 #include "CoreFoundation/CoreFoundation.h"
@@ -16,11 +17,11 @@
 
 const static int WIDTH = 640;
 const static int HEIGHT = 400;
-
+const static int SAMPLERATE = 44100;
 const float SCROLLER_SPEED = 3.67;
 const int SCROLLER_TEXT_HEIGHT = 32;
 const int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
-const std::string SCROLLER_TEXT[] = { "HAPPY NEW YEAR", "YEAH BWOIIIIIIII", "DAMN YOU ALL TO HELL" };
+const std::string SCROLLER_TEXT[] = { "HERES A PROOF OF CONCEPT DEMO", "FOR SOME VAMPIRIZED AMIGAS", "MADE BY MARLON BEIJER" };
 const int FRAMES_PER_SECOND = 60;
 const int STAR_MAX = WIDTH / 15;
 const int STAR_RND[] = { 1, 2, 4, 6 };
@@ -92,8 +93,6 @@ static void star_randomize()
 
 		val.bmp = 5 * floor(rand() % 11);
 
-		//printf("BMP: %i\n", val.bmp);
-
 		STAR_BMP[i] = val;
 	}
 }
@@ -108,6 +107,8 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
 
 static int init(xmp_context ctx)
 {
+	char name[64];
+
 	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) != 0 )
 	{
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
@@ -121,8 +122,8 @@ static int init(xmp_context ctx)
 		return -1;
 	}
 
-	a.freq = 44100;
-	a.format = AUDIO_S16;
+	a.freq = SAMPLERATE;
+	a.format = AUDIO_S16SYS;
 	a.channels = 2;
 	a.samples = 2048;
 	a.callback = fill_audio;
@@ -132,6 +133,8 @@ static int init(xmp_context ctx)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
+
+	//printf("SDL: Using audio driver: %s\n", SDL_AudioDriverName(name, 32));
 
 	atexit( SDL_Quit );
 	return 0;
@@ -151,7 +154,7 @@ extern "C" int SDL_main(int argc, char *argv[])
 int main ( int argc, const char* argv[] )
 #endif
 {
-#ifdef __OSX__    
+#ifdef __OSX__
     CFBundleRef mainBundle = CFBundleGetMainBundle();
     CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
     char path[PATH_MAX];
@@ -176,7 +179,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_FULLSCREEN );
+	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE | SDL_FULLSCREEN );
 
 	if ( screen == NULL )
 	{
@@ -206,14 +209,15 @@ int main ( int argc, const char* argv[] )
 	const int sin_pos[] = {4,4,5,6,7,8,10,12,14,16,19,22,25,28,32,36,40,44,49,54,59,65,71,77,83,89,94,99,104,109,113,117,121,125,128,131,134,137,139,141,143,145,146,147,148,149,149,149,149,148,147,146,145,143,141,139,137,134,131,128,125,121,117,113,109,104,99,94,89,83,77,71,65,59,54,49,44,40,36,32,28,25,22,19,16,14,12,10,8,7,6,5,4,4};
 	const int sin_len = sizeof(sin_pos)/sizeof(sin_pos[0]);
 
-	char *tune = (char *)"test.xm";
-	if (xmp_load_module(ctx, tune) < 0)
+	char *tune = (char *)"blitz.mod";
+
+	if (xmp_load_module_from_memory(ctx, (void*)moddata, moddatalen) < 0)
 	{
 		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
 		exit(0);
 	}
 
-	xmp_start_player(ctx, 44100, 0);
+	xmp_start_player(ctx, SAMPLERATE, 0);
 	SDL_PauseAudio(0);
 
 	while (gameRunning)
@@ -239,9 +243,11 @@ int main ( int argc, const char* argv[] )
 				{
 					case SDLK_ESCAPE:
 						gameRunning = false;
-					break;
-                    default:
-                        break;
+						break;
+					case SDLK_RETURN:
+						break;
+					default:
+						break;
 				}
 			}
 		}
@@ -251,23 +257,23 @@ int main ( int argc, const char* argv[] )
 		int i = 0;
 		if ( ++sin_cnt >= sin_len ) sin_cnt = 0;
 
-		SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
-		SDL_FillRect( screen, &box, 1500 );
-        box.y = SCROLLER_Y_TOP + ( SCROLLER_Y_TOP / 2 );
-		SDL_FillRect( screen, &box, 1500 );
-		box.y = ( SCROLLER_Y_TOP / 2 ) + 1;
-		box.h = ( SCROLLER_Y_TOP ) - 1;
-		SDL_FillRect( screen, &box, 0xFF0000 );
-
 		for (int i = 0; i < STAR_MAX; ++i)
 		{
 			int len = STAR_BMP[i].x + STAR_BMP[i].spd;
 			if ( len >= WIDTH ) len = 0;
 			STAR_BMP[i].x = len;
-			
+
 			blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y, 5, 5 );
 			blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y + ( SCROLLER_Y_TOP * 1.5 ), 5, 5 );
 		}
+
+		SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
+		SDL_FillRect( screen, &box, 1500 );
+		box.y = SCROLLER_Y_TOP + ( SCROLLER_Y_TOP / 2 );
+		SDL_FillRect( screen, &box, 1500 );
+		box.y = ( SCROLLER_Y_TOP / 2 ) + 1;
+		box.h = ( SCROLLER_Y_TOP ) - 1;
+		SDL_FillRect( screen, &box, 0xFF0000 );
 
 		for ( const char& c : SCROLLER_TEXT[textCnt] )
 		{
@@ -305,6 +311,7 @@ int main ( int argc, const char* argv[] )
 		{
 			SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
 		}
+
 	}
 
 	xmp_end_player(ctx);
