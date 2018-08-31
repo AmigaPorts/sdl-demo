@@ -8,6 +8,7 @@
 #include "star_bmp.h"
 #include "hex2surface.h"
 #include "image.h"
+#include "ball.h"
 #include "font-16x16-1520x16.h"
 #include "stars.h"
 #include "moddata.h"
@@ -16,17 +17,39 @@
 #include "CoreFoundation/CoreFoundation.h"
 #endif
 
+using namespace std;
+
 const static int WIDTH = 640;
 const static int HEIGHT = 400;
 const static int SAMPLERATE = 44100;
-const float SCROLLER_SPEED = 3.67;
-const int SCROLLER_TEXT_HEIGHT = 32;
-const int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
-const std::string SCROLLER_TEXT[] = { "HERES A PROOF OF CONCEPT DEMO", "FOR SOME VAMPIRIZED AMIGAS", "MADE BY MARLON BEIJER" };
-const int SCROLLER_TEXT_LEN = sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEXT[0]);
-const int FRAMES_PER_SECOND = 60;
-const int STAR_MAX = WIDTH / 15;
-const int STAR_RND[] = { 1, 2, 4, 6 };
+const static float SCROLLER_SPEED = 3.67;
+const static int SCROLLER_TEXT_HEIGHT = 32;
+const static int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
+const static string SCROLLER_TEXT[] = { "EEVULNET", "FOREVER LOVING THE AMIGA" };
+const static int SCROLLER_TEXT_LEN = sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEXT[0]);
+const static int FRAMES_PER_SECOND = 60;
+const static int STAR_MAX = WIDTH / 15;
+const static int STAR_RND[] = { 1, 2, 4, 6 };
+static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
+static SDL_Surface *screen;
+
+const static int ballrec = 131;
+
+static int pxa1=0; 
+static int pxa2=0; 
+static int pya1=0; 
+static int pya2=0; 
+
+const static int PILEN = 360*2; 
+
+const static int RX1 = ((WIDTH-16)/4); //76 
+const static int RX2 = ((WIDTH-16)/4); //76 
+const static int RY1 = ((HEIGHT-16)/4); //44 
+const static int RY2 = ((HEIGHT-16)/4); //44 
+
+static long long cosTab[PILEN]; 
+static long long sinTab[PILEN];
+
 static StarBmp STAR_BMP[STAR_MAX];
 
 static int frame = 0;
@@ -35,6 +58,14 @@ Timer fps;
 
 static void star_randomize()
 {
+
+	for ( int i = 0; i < PILEN; i++ )
+	{
+		float a = (i * M_PI); 
+	  	cosTab[i] = 1000*cos(a); 
+		sinTab[i] = 1000*sin(a); 
+	} 
+
 	for (int i = 0; i < STAR_MAX; ++i)
 	{
 		StarBmp val;
@@ -150,6 +181,76 @@ static void blit ( SDL_Surface* image, SDL_Surface* screen, Sint16 srcX, Sint16 
 	SDL_BlitSurface( image, &src, screen, &dest );
 }
 
+static void DrawText(SDL_Surface* font, SDL_Surface* screen, int posX, int posY, int fontW, int fontH, string text)
+{
+	int i = 0;
+
+	for ( const char& c : text )
+	{
+		int fnt = c - 32;
+
+		if ( ( fontW * i ) < WIDTH  && ( fontW * i ) > -16 )
+		{
+			blit( font, screen, fontW*fnt, 0, (fontW*i) + posX, posY, fontW, fontH );
+		}
+
+		i++;
+	}
+}
+
+static void DrawStars(SDL_Surface* stars, SDL_Surface* screen)
+{
+	for (int i = 0; i < STAR_MAX; ++i)
+	{
+		int len = STAR_BMP[i].x + STAR_BMP[i].spd;
+		if ( len >= WIDTH ) len = 0;
+		STAR_BMP[i].x = len;
+
+		blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y, 5, 5 );
+		blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y + ( SCROLLER_Y_TOP * 1.5 ), 5, 5 );
+	}
+}
+
+static int mod( int v, int m )
+{ 
+	while ( v < 0 ) v += m;
+
+	return v % m; 
+} 
+
+static void DrawBalls(SDL_Surface* ball, SDL_Surface* screen)
+{
+	int pxb1 = pxa1; 
+	int pxb2 = pxa2; 
+	int pyb1 = pya1; 
+	int pyb2 = pya2; 
+
+	for ( int i = 0; i < ballrec; i++ )
+	{	
+		long x = ((RX1 * cosTab[mod( pxb1, PILEN )]) + (RX2 * sinTab[mod( pxb2, PILEN )])) >> 15; 
+     	long y = (RY1 * cosTab[mod( pyb1, PILEN )] + RY2 * sinTab[mod( pyb2, PILEN )]) >> 15; 
+
+     	x += (WIDTH-16)/2; 
+     	y += (HEIGHT-16)/2; 
+
+	  	blit( ball, screen, 0,0, x, y, 16, 16 );
+
+	  	DrawText(font2, screen, 32, 32, 16, 16, "X: " + to_string(cosTab[mod( pxb1, PILEN )]));
+	  	DrawText(font2, screen, 32, 48, 16, 16, "Y: " + to_string(mod( pyb1, PILEN )));
+			
+		pxb1 += 7*2; 
+    	pxb2 -= 4*2; 
+    	pyb1 += 6*2; 
+    	pyb2 -= 3*2; 		
+	}	
+	
+  	pxa1 += 3*2; 
+  	pxa2 += 2*2; 
+  	pya1 += -1*2; 
+  	pya2 += 2*2; 
+
+}
+
 #if defined(__OSX__)
 extern "C" int SDL_main(int argc, char *argv[])
 #else
@@ -181,7 +282,10 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	SDL_Surface *screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE | SDL_FULLSCREEN );
+	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE);// | SDL_FULLSCREEN );
+
+	font2 = SDL_DisplayFormat( font2 );
+	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font2->format, 255, 0, 255) );
 
 	if ( screen == NULL )
 	{
@@ -191,15 +295,14 @@ int main ( int argc, const char* argv[] )
 	star_randomize();
 
 	SDL_Surface *font = Hex2Surface(image, 864, 32);
-	SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
+	
+	SDL_Surface *ball = Hex2Surface(hexball, 16, 16);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
 
 	font = SDL_DisplayFormat(font);
-	font2 = SDL_DisplayFormat(font2);
-	//SDL_FreeSurface( fontImg );
 
 	SDL_SetColorKey( font, SDL_SRCCOLORKEY, SDL_MapRGB( font->format, 255, 0, 255) );
-	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font->format, 255, 0, 255) );
+	
 
 	SDL_Event event;
 
@@ -220,7 +323,7 @@ int main ( int argc, const char* argv[] )
 	}
 
 	xmp_start_player(ctx, SAMPLERATE, 0);
-	SDL_PauseAudio(0);
+	SDL_PauseAudio(1);
 
 	while (gameRunning)
 	{
@@ -243,6 +346,12 @@ int main ( int argc, const char* argv[] )
 						gameRunning = false;
 						break;
 					case SDLK_RETURN:
+						if (scnCnt == 0)
+						{
+							scnCnt = 1;
+							scr = -WIDTH;
+							SDL_PauseAudio(0);
+						}
 						break;
 					default:
 						break;
@@ -255,15 +364,7 @@ int main ( int argc, const char* argv[] )
 		int i = 0;
 		if ( ++sin_cnt >= sin_len ) sin_cnt = 0;
 
-		for (int i = 0; i < STAR_MAX; ++i)
-		{
-			int len = STAR_BMP[i].x + STAR_BMP[i].spd;
-			if ( len >= WIDTH ) len = 0;
-			STAR_BMP[i].x = len;
-
-			blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y, 5, 5 );
-			blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y + ( SCROLLER_Y_TOP * 1.5 ), 5, 5 );
-		}
+		DrawStars(stars, screen);
 
 		SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
 		SDL_FillRect( screen, &box, 1500 );
@@ -273,7 +374,28 @@ int main ( int argc, const char* argv[] )
 		box.h = ( SCROLLER_Y_TOP ) - 1;
 		SDL_FillRect( screen, &box, 0xFF0000 );
 
+		
+
 		if (scnCnt == 0)
+		{
+			scr = -((WIDTH / 2) - 8 * 16);
+			for ( const char& c : SCROLLER_TEXT[textCnt] )
+			{
+				int fnt = c - 64;
+				int offsetY = 0;
+
+				if ( (32*i) - scr < WIDTH  && (32*i) - scr > -32 )
+				{
+					blit( font, screen, 32*fnt, 0, (32*i)-scr, SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
+				}
+
+				i++;
+			}
+
+			DrawText(font2, screen, (WIDTH/2)-((16*11)/2), SCROLLER_Y_TOP+32, 16, 16, "PRESS ENTER");
+
+		}
+		else if (scnCnt == 1)
 		{
 			for ( const char& c : SCROLLER_TEXT[textCnt] )
 			{
@@ -292,11 +414,6 @@ int main ( int argc, const char* argv[] )
 					blit( font, screen, 32*fnt, 0, (32*i)-scr, SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
 				}
 
-				if ( (16*i) - scr < WIDTH  && (16*i) - scr > -16 )
-				{
-					blit( font2, screen, 16*(fnt+32), 0, (16*i)-scr, 0, 16, 16 );
-				}
-
 				i++;
 			}
 
@@ -307,9 +424,13 @@ int main ( int argc, const char* argv[] )
 				if (++textCnt >= SCROLLER_TEXT_LEN)
 				{
 					textCnt = 0;
-					++scnCnt;
+					//++scnCnt;
 				}
 			}
+		}
+		else if (scnCnt == 2)
+		{
+			DrawBalls(ball,screen);
 		}
 
 		SDL_Flip(screen);
@@ -327,6 +448,7 @@ int main ( int argc, const char* argv[] )
 	xmp_free_context(ctx);
 
 	SDL_CloseAudio();
+	SDL_FreeSurface(ball);
 	SDL_FreeSurface(stars);
 	SDL_FreeSurface(font);
 	SDL_FreeSurface(font2);
