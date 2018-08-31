@@ -1,9 +1,22 @@
 // Marlon Beijer, Demo SDL-1.2 Test
 
-#include <SDL.h>
+
 #include <iostream>
 #include <math.h>
 #include <string>
+#ifdef WIN32
+#pragma comment(lib, "SDLmain.lib")
+#pragma comment(lib, "SDL.lib")
+#endif
+
+#if _MSC_VER >= 1400
+extern "C" _CRTIMP extern FILE _iob[];
+extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
+#endif
+#include <SDL.h>
+#if defined(WIN32)
+#undef main
+#endif
 #include "timer.h"
 #include "star_bmp.h"
 #include "hex2surface.h"
@@ -55,6 +68,12 @@ static StarBmp STAR_BMP[STAR_MAX];
 static int frame = 0;
 
 Timer fps;
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+
 
 static void star_randomize()
 {

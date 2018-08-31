@@ -7,8 +7,8 @@ class StarBmp
 	//Initializes variables
 	StarBmp();
 
-	int x;
-	int y;
+	double x;
+	double y;
 	int spd;
-	int bmp;
+	double bmp;
 };
