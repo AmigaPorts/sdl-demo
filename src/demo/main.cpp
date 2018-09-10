@@ -35,7 +35,7 @@ using namespace std;
 const static int WIDTH = 640;
 const static int HEIGHT = 400;
 const static int SAMPLERATE = 44100;
-const static float SCROLLER_SPEED = 3.67;
+const static double SCROLLER_SPEED = 3.67;
 const static int SCROLLER_TEXT_HEIGHT = 32;
 const static int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
 const static string SCROLLER_TEXT[] = { "EEVULNET", "FOREVER LOVING THE AMIGA" };
@@ -53,15 +53,15 @@ static int pxa2=0;
 static int pya1=0; 
 static int pya2=0; 
 
-const static int PILEN = 360*2; 
+const static int PILEN = (int)(360*2); 
 
 const static int RX1 = ((WIDTH-16)/4); //76 
 const static int RX2 = ((WIDTH-16)/4); //76 
 const static int RY1 = ((HEIGHT-16)/4); //44 
 const static int RY2 = ((HEIGHT-16)/4); //44 
 
-static long long cosTab[PILEN]; 
-static long long sinTab[PILEN];
+static long cosTab[PILEN]; 
+static long sinTab[PILEN];
 
 static StarBmp STAR_BMP[STAR_MAX];
 
@@ -73,25 +73,22 @@ Timer fps;
 #define M_PI 3.14159265358979323846
 #endif
 
-
-
 static void star_randomize()
 {
-
 	for ( int i = 0; i < PILEN; i++ )
 	{
-		float a = (i * M_PI); 
-	  	cosTab[i] = 1000*cos(a); 
-		sinTab[i] = 1000*sin(a); 
+		double a = (i * 2 * 3.1415926) * (1.00f / PILEN);
+	  	cosTab[i] = (long)(32767 * cos(a));
+ 		sinTab[i] = (long)(32767 * sin(a));
 	} 
 
 	for (int i = 0; i < STAR_MAX; ++i)
 	{
 		StarBmp val;
 
-		val.x = floor(rand() % WIDTH);
-		val.y = floor(rand() % rand() % ( SCROLLER_Y_TOP / 2 ) );
-		int rnd = floor(rand() % 4 );
+		val.x = (int)floor(rand() % WIDTH);
+		val.y = (int)floor(rand() % rand() % ( SCROLLER_Y_TOP / 2 ) );
+		int rnd = (int)floor(rand() % 4 );
 
 		val.spd = STAR_RND[rnd];
 
@@ -143,7 +140,7 @@ static void star_randomize()
 			}
 		}
 
-		val.bmp = 5 * floor(rand() % 11);
+		val.bmp = 5 * (int)floor(rand() % 11);
 
 		STAR_BMP[i] = val;
 	}
@@ -159,8 +156,6 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
 
 static int init(xmp_context ctx)
 {
-	char name[64];
-
 	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) != 0 )
 	{
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
@@ -185,8 +180,6 @@ static int init(xmp_context ctx)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
-
-	//printf("SDL: Using audio driver: %s\n", SDL_AudioDriverName(name, 32));
 
 	atexit( SDL_Quit );
 	return 0;
@@ -226,7 +219,7 @@ static void DrawStars(SDL_Surface* stars, SDL_Surface* screen)
 		STAR_BMP[i].x = len;
 
 		blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y, 5, 5 );
-		blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y + ( SCROLLER_Y_TOP * 1.5 ), 5, 5 );
+		blit( stars, screen, STAR_BMP[i].bmp, 0, len, STAR_BMP[i].y + (int)( SCROLLER_Y_TOP * 1.5 ), 5, 5 );
 	}
 }
 
@@ -246,16 +239,13 @@ static void DrawBalls(SDL_Surface* ball, SDL_Surface* screen)
 
 	for ( int i = 0; i < ballrec; i++ )
 	{	
-		long x = ((RX1 * cosTab[mod( pxb1, PILEN )]) + (RX2 * sinTab[mod( pxb2, PILEN )])) >> 15; 
-     	long y = (RY1 * cosTab[mod( pyb1, PILEN )] + RY2 * sinTab[mod( pyb2, PILEN )]) >> 15; 
+		int x = ((RX1 * cosTab[mod( pxb1, PILEN )]) + (RX2 * sinTab[mod( pxb2, PILEN )])) >> 15; 
+     	int y = (RY1 * cosTab[mod( pyb1, PILEN )] + RY2 * sinTab[mod( pyb2, PILEN )]) >> 15; 
 
      	x += (WIDTH-16)/2; 
      	y += (HEIGHT-16)/2; 
 
 	  	blit( ball, screen, 0,0, x, y, 16, 16 );
-
-	  	DrawText(font2, screen, 32, 32, 16, 16, "X: " + to_string(cosTab[mod( pxb1, PILEN )]));
-	  	DrawText(font2, screen, 32, 48, 16, 16, "Y: " + to_string(mod( pyb1, PILEN )));
 			
 		pxb1 += 7*2; 
     	pxb2 -= 4*2; 
@@ -301,7 +291,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE);// | SDL_FULLSCREEN );
+	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE/* | SDL_FULLSCREEN*/);
 
 	font2 = SDL_DisplayFormat( font2 );
 	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font2->format, 255, 0, 255) );
@@ -326,10 +316,10 @@ int main ( int argc, const char* argv[] )
 	SDL_Event event;
 
 	bool gameRunning = true;
-	float scr = -WIDTH;
+	int scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
-	int scnCnt = 0;
+	int scnCnt = 2;
 	const int sin_pos[] = {4,4,5,6,7,8,10,12,14,16,19,22,25,28,32,36,40,44,49,54,59,65,71,77,83,89,94,99,104,109,113,117,121,125,128,131,134,137,139,141,143,145,146,147,148,149,149,149,149,148,147,146,145,143,141,139,137,134,131,128,125,121,117,113,109,104,99,94,89,83,77,71,65,59,54,49,44,40,36,32,28,25,22,19,16,14,12,10,8,7,6,5,4,4};
 	const int sin_len = sizeof(sin_pos)/sizeof(sin_pos[0]);
 
@@ -436,14 +426,14 @@ int main ( int argc, const char* argv[] )
 				i++;
 			}
 
-			scr = scr + SCROLLER_SPEED;
+			scr = scr + (int)SCROLLER_SPEED;
 			if ( scr > SCROLLER_TEXT[textCnt].size()*32 )
 			{
 				scr = -WIDTH;
 				if (++textCnt >= SCROLLER_TEXT_LEN)
 				{
 					textCnt = 0;
-					//++scnCnt;
+					++scnCnt;
 				}
 			}
 		}
