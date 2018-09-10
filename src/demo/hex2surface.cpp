@@ -1,5 +1,4 @@
 #include "hex2surface.h"
-
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 Uint32 rmask = 0xff000000;
 Uint32 gmask = 0x00ff0000;
@@ -15,4 +14,9 @@ Uint32 amask = 0xff000000;
 SDL_Surface* Hex2Surface(const unsigned char image[], int width, int height)
 {
 	return SDL_CreateRGBSurfaceFrom((void*)image, width, height, 32, width*4, rmask, gmask, bmask, amask);
+}
+
+SDL_Surface* CreateSurface(int width, int height)
+{
+	return SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask);
 }

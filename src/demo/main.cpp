@@ -291,7 +291,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE/* | SDL_FULLSCREEN*/);
+	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE | SDL_FULLSCREEN );
 
 	font2 = SDL_DisplayFormat( font2 );
 	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font2->format, 255, 0, 255) );
@@ -304,7 +304,6 @@ int main ( int argc, const char* argv[] )
 	star_randomize();
 
 	SDL_Surface *font = Hex2Surface(image, 864, 32);
-	
 	SDL_Surface *ball = Hex2Surface(hexball, 16, 16);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
 
@@ -316,7 +315,7 @@ int main ( int argc, const char* argv[] )
 	SDL_Event event;
 
 	bool gameRunning = true;
-	int scr = -WIDTH;
+	double scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
 	int scnCnt = 0;
@@ -333,6 +332,8 @@ int main ( int argc, const char* argv[] )
 
 	xmp_start_player(ctx, SAMPLERATE, 0);
 	SDL_PauseAudio(1);
+	int fade = 255;
+	SDL_Rect screenWH = { 0, 0, WIDTH, HEIGHT };
 
 	while (gameRunning)
 	{
@@ -374,14 +375,36 @@ int main ( int argc, const char* argv[] )
 		if ( ++sin_cnt >= sin_len ) sin_cnt = 0;
 
 		DrawStars(stars, screen);
+		if ((frame / 60) > 18 && (frame / 60) < 28)
+		{
+			scnCnt = 3;
+			if (fade < 1)
+			{
+				fade = 0;
+				
+			}
+			else
+			{
+				--fade;
+			}
 
-		SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
-		SDL_FillRect( screen, &box, 1500 );
-		box.y = SCROLLER_Y_TOP + ( SCROLLER_Y_TOP / 2 );
-		SDL_FillRect( screen, &box, 1500 );
-		box.y = ( SCROLLER_Y_TOP / 2 ) + 1;
-		box.h = ( SCROLLER_Y_TOP ) - 1;
-		SDL_FillRect( screen, &box, 0xFF0000 );
+			SDL_Rect box = { 0, 0, WIDTH, 5 };
+			for (int v = 0; v < HEIGHT/5; v++)
+			{
+				box.y = v*5;
+				SDL_FillRect(screen, &box, SDL_MapRGB(screen->format, (int)ceil(rand() / 255), (int)ceil(rand() / 255), (int)ceil(rand() / 255)));
+			}
+		}
+		else
+		{
+			SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
+			SDL_FillRect(screen, &box, 1500);
+			box.y = SCROLLER_Y_TOP + (SCROLLER_Y_TOP / 2);
+			SDL_FillRect(screen, &box, 1500);
+			box.y = (SCROLLER_Y_TOP / 2) + 1;
+			box.h = (SCROLLER_Y_TOP)-1;
+			SDL_FillRect(screen, &box, 0xFF0000);
+		}
 
 		
 
@@ -395,7 +418,7 @@ int main ( int argc, const char* argv[] )
 
 				if ( (32*i) - scr < WIDTH  && (32*i) - scr > -32 )
 				{
-					blit( font, screen, 32*fnt, 0, (32*i)-scr, SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
+					blit( font, screen, 32*fnt, 0, (int)((32*i)-scr), SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
 				}
 
 				i++;
@@ -420,13 +443,13 @@ int main ( int argc, const char* argv[] )
 
 				if ( (32*i) - scr < WIDTH  && (32*i) - scr > -32 )
 				{
-					blit( font, screen, 32*fnt, 0, (32*i)-scr, SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
+					blit( font, screen, 32*fnt, 0, (int)((32*i)-scr), SCROLLER_Y_TOP + offsetY - 16, 32, 32 );
 				}
 
 				i++;
 			}
 
-			scr = scr + (int)SCROLLER_SPEED;
+			scr = scr + SCROLLER_SPEED;
 			if ( scr > SCROLLER_TEXT[textCnt].size()*32 )
 			{
 				scr = -WIDTH;
@@ -440,6 +463,10 @@ int main ( int argc, const char* argv[] )
 		else if (scnCnt == 2)
 		{
 			DrawBalls(ball,screen);
+		}
+		else if (scnCnt == 3)
+		{
+			DrawText(font2, screen, (WIDTH / 2) - ((16 * 7) / 2), SCROLLER_Y_TOP - 8, 16, 16, "LOADING");
 		}
 
 		SDL_Flip(screen);
