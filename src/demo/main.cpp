@@ -31,7 +31,6 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #endif
 
 using namespace std;
-
 const static int WIDTH = 640;
 const static int HEIGHT = 400;
 const static int SAMPLERATE = 44100;
@@ -45,22 +44,20 @@ const static int STAR_MAX = WIDTH / 15;
 const static int STAR_RND[] = { 1, 2, 4, 6 };
 static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
 static SDL_Surface *screen;
-
 const static int ballrec = 131;
+static int pxa1=0;
+static int pxa2=0;
+static int pya1=0;
+static int pya2=0;
 
-static int pxa1=0; 
-static int pxa2=0; 
-static int pya1=0; 
-static int pya2=0; 
+const static int PILEN = (int)(360*2);
 
-const static int PILEN = (int)(360*2); 
+const static int RX1 = ((WIDTH-16)/4); //76
+const static int RX2 = ((WIDTH-16)/4); //76
+const static int RY1 = ((HEIGHT-16)/4); //44
+const static int RY2 = ((HEIGHT-16)/4); //44
 
-const static int RX1 = ((WIDTH-16)/4); //76 
-const static int RX2 = ((WIDTH-16)/4); //76 
-const static int RY1 = ((HEIGHT-16)/4); //44 
-const static int RY2 = ((HEIGHT-16)/4); //44 
-
-static long cosTab[PILEN]; 
+static long cosTab[PILEN];
 static long sinTab[PILEN];
 
 static StarBmp STAR_BMP[STAR_MAX];
@@ -223,40 +220,37 @@ static void DrawStars(SDL_Surface* stars, SDL_Surface* screen)
 	}
 }
 
-static int mod( int v, int m )
-{ 
+static inline int mod( int v, int m )
+{
 	while ( v < 0 ) v += m;
 
-	return v % m; 
-} 
+	return v % m;
+}
 
 static void DrawBalls(SDL_Surface* ball, SDL_Surface* screen)
 {
-	int pxb1 = pxa1; 
-	int pxb2 = pxa2; 
-	int pyb1 = pya1; 
-	int pyb2 = pya2; 
+	int pxb1 = pxa1;
+	int pxb2 = pxa2;
+	int pyb1 = pya1;
+	int pyb2 = pya2;
 
 	for ( int i = 0; i < ballrec; i++ )
-	{	
-		int x = ((RX1 * cosTab[mod( pxb1, PILEN )]) + (RX2 * sinTab[mod( pxb2, PILEN )])) >> 15; 
-     	int y = (RY1 * cosTab[mod( pyb1, PILEN )] + RY2 * sinTab[mod( pyb2, PILEN )]) >> 15; 
-
-     	x += (WIDTH-16)/2; 
-     	y += (HEIGHT-16)/2; 
+	{
+		int x = (((RX1 * cosTab[mod( pxb1, PILEN )]) + (RX2 * sinTab[mod( pxb2, PILEN )])) >> 15) + (WIDTH-16)/2;
+		int y = ((RY1 * cosTab[mod( pyb1, PILEN )] + RY2 * sinTab[mod( pyb2, PILEN )]) >> 15) + (HEIGHT-16)/2;
 
 	  	blit( ball, screen, 0,0, x, y, 16, 16 );
-			
-		pxb1 += 7*2; 
-    	pxb2 -= 4*2; 
-    	pyb1 += 6*2; 
-    	pyb2 -= 3*2; 		
-	}	
-	
-  	pxa1 += 3*2; 
-  	pxa2 += 2*2; 
-  	pya1 += -1*2; 
-  	pya2 += 2*2; 
+
+		pxb1 += 7*2;
+		pxb2 -= 4*2;
+		pyb1 += 6*2;
+		pyb2 -= 3*2;
+	}
+
+  	pxa1 += 3*2;
+  	pxa2 += 2*2;
+  	pya1 += -1*2;
+  	pya2 += 2*2;
 
 }
 
@@ -310,7 +304,7 @@ int main ( int argc, const char* argv[] )
 	font = SDL_DisplayFormat(font);
 
 	SDL_SetColorKey( font, SDL_SRCCOLORKEY, SDL_MapRGB( font->format, 255, 0, 255) );
-	
+
 
 	SDL_Event event;
 
@@ -381,7 +375,7 @@ int main ( int argc, const char* argv[] )
 			if (fade < 1)
 			{
 				fade = 0;
-				
+
 			}
 			else
 			{
@@ -406,7 +400,7 @@ int main ( int argc, const char* argv[] )
 			SDL_FillRect(screen, &box, 0xFF0000);
 		}
 
-		
+
 
 		if (scnCnt == 0)
 		{
@@ -472,11 +466,12 @@ int main ( int argc, const char* argv[] )
 		SDL_Flip(screen);
 		frame++;
 
+#ifndef __AMIGA__
 		if( fps.get_ticks() < 1000 / FRAMES_PER_SECOND )
 		{
 			SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
 		}
-
+#endif
 	}
 
 	xmp_end_player(ctx);
