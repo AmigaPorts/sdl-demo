@@ -1,4 +1,4 @@
-// Marlon Beijer, Demo SDL-1.2 Test
+// Marlon Beijer, Demo SDL-1.2
 #include <iostream>
 #include <math.h>
 #include <string>
@@ -22,7 +22,7 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #include "font-16x16-1520x16.h"
 #include "stars.h"
 #include "moddata.h"
-//#include "xmp.h"
+#include "xmp.h"
 #ifdef __OSX__
 #include "CoreFoundation/CoreFoundation.h"
 #endif
@@ -144,11 +144,11 @@ static int playing;
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
-	//if (xmp_play_buffer((xmp_context)udata, stream, len, 0) < 0)
+	if (xmp_play_buffer((xmp_context)udata, stream, len, 0) < 0)
 		playing = 0;
 }
 
-static int init()//xmp_context ctx)
+static int init(xmp_context ctx)
 {
 	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) != 0 )
 	{
@@ -168,7 +168,7 @@ static int init()//xmp_context ctx)
 	a.channels = 2;
 	a.samples = 2048;
 	a.callback = fill_audio;
-//	a.userdata = ctx;
+	a.userdata = ctx;
 
 	if (SDL_OpenAudio(&a, NULL) < 0) {
 		fprintf(stderr, "%s\n", SDL_GetError());
@@ -270,11 +270,11 @@ int main ( int argc, const char* argv[] )
     chdir(path); // error: expected constructor, destructor or type conversion before '(' token
     std::cout << "Current Path: " << path << std::endl; // error: expected constructor, destructor or type conversion before '<<' token
 #endif
-/*
+
 	xmp_context ctx;
 	ctx = xmp_create_context();
-*/
-	if (init(/*ctx*/) < 0)
+
+	if (init(ctx) < 0)
 	{
 		fprintf(stderr, "%s: can't initialize sound\n", argv[0]);
 		exit(1);
@@ -314,7 +314,7 @@ int main ( int argc, const char* argv[] )
 	const int sin_len = sizeof(sin_pos)/sizeof(sin_pos[0]);
 
 	char *tune = (char *)"blitz.mod";
-/*
+
 	if (xmp_load_module_from_memory(ctx, (void*)moddata, moddatalen) < 0)
 	{
 		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
@@ -322,7 +322,7 @@ int main ( int argc, const char* argv[] )
 	}
 
 	xmp_start_player(ctx, SAMPLERATE, 0);
-*/
+
 	SDL_PauseAudio(1);
 	int fade = 255;
 	SDL_Rect screenWH = { 0, 0, WIDTH, HEIGHT };
@@ -369,7 +369,7 @@ int main ( int argc, const char* argv[] )
 		DrawStars(stars, screen);
 		if ((frame / 60) > 18 && (frame / 60) < 28)
 		{
-			scnCnt = 3;
+//			scnCnt = 3;
 			if (fade < 1)
 			{
 				fade = 0;
@@ -471,11 +471,11 @@ int main ( int argc, const char* argv[] )
 		}
 #endif
 	}
-/*
+
 	xmp_end_player(ctx);
 	xmp_release_module(ctx);
 	xmp_free_context(ctx);
-*/
+
 	SDL_CloseAudio();
 	SDL_FreeSurface(ball);
 	SDL_FreeSurface(stars);

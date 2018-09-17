@@ -20,6 +20,7 @@ if(AROS)
     # AROS will provide the SDL dependency via makefile.
 else()
     find_package(SDL 1.2 REQUIRED)
+    find_package(XMP 4.0 REQUIRED)
 endif()
 
 set(
@@ -32,6 +33,7 @@ set(
 
 include_directories(
     ${SDL_INCLUDE_DIR}
+    ${XMP_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/demo
 )
@@ -40,11 +42,11 @@ include_directories(
 set(TARGET_NAME ${PROJECT_NAME_LOWER})
 add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
 if(MORPHOS OR AMIGAOS3 AND NOT WARPOS)
-    target_link_libraries(${TARGET_NAME} ${SDL_LIBRARY} -ldebug)
+    target_link_libraries(${TARGET_NAME} ${SDL_LIBRARY} ${XMP_LIBRARY} -ldebug)
 elseif(AROS)
-    target_link_libraries(${TARGET_NAME} -lSDL)
+    target_link_libraries(${TARGET_NAME} -lSDL -lxmp)
 else()
-    target_link_libraries(${TARGET_NAME} ${SDL_LIBRARY})
+    target_link_libraries(${TARGET_NAME} ${SDL_LIBRARY} ${XMP_LIBRARY})
 endif()
 
 set(INSTALL_DEST ${CMAKE_INSTALL_BINDIR})
