@@ -155,7 +155,7 @@ static int init()//xmp_context ctx)
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
 		return -1;
 	}
-/*
+*
 	SDL_AudioSpec a;
 
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -174,7 +174,7 @@ static int init()//xmp_context ctx)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
-*/
+/
 	atexit( SDL_Quit );
 	return 0;
 }
@@ -282,7 +282,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_SWSURFACE /*| SDL_FULLSCREEN*/ );
+	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_SWSURFACE | SDL_FULLSCREEN );
 
 	font2 = SDL_DisplayFormat( font2 );
 	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font2->format, 255, 0, 255) );
@@ -309,7 +309,7 @@ int main ( int argc, const char* argv[] )
 	double scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
-	int scnCnt = 1;
+	int scnCnt = 0;
 	const int sin_pos[] = {4,4,5,6,7,8,10,12,14,16,19,22,25,28,32,36,40,44,49,54,59,65,71,77,83,89,94,99,104,109,113,117,121,125,128,131,134,137,139,141,143,145,146,147,148,149,149,149,149,148,147,146,145,143,141,139,137,134,131,128,125,121,117,113,109,104,99,94,89,83,77,71,65,59,54,49,44,40,36,32,28,25,22,19,16,14,12,10,8,7,6,5,4,4};
 	const int sin_len = sizeof(sin_pos)/sizeof(sin_pos[0]);
 
@@ -331,7 +331,7 @@ int main ( int argc, const char* argv[] )
 	{
 		//Start the frame timer
 		fps.start();
-/*
+
 		if (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
@@ -360,7 +360,7 @@ int main ( int argc, const char* argv[] )
 				}
 			}
 		}
-*/
+
 		SDL_FillRect( screen, NULL, SDL_MapRGB( screen->format, 0, 0, 0 ) );
 
 		int i = 0;
