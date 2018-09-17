@@ -155,7 +155,7 @@ static int init()//xmp_context ctx)
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
 		return -1;
 	}
-*
+
 	SDL_AudioSpec a;
 
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -174,7 +174,7 @@ static int init()//xmp_context ctx)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
-/
+
 	atexit( SDL_Quit );
 	return 0;
 }
