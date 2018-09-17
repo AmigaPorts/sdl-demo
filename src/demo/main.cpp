@@ -155,7 +155,7 @@ static int init()//xmp_context ctx)
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
 		return -1;
 	}
-
+/*
 	SDL_AudioSpec a;
 
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -174,7 +174,7 @@ static int init()//xmp_context ctx)
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
-
+*/
 	atexit( SDL_Quit );
 	return 0;
 }
@@ -282,7 +282,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE /*| SDL_FULLSCREEN*/ );
+	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_SWSURFACE /*| SDL_FULLSCREEN*/ );
 
 	font2 = SDL_DisplayFormat( font2 );
 	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font2->format, 255, 0, 255) );
