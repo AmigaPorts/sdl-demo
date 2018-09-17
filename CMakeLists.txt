@@ -16,7 +16,11 @@ set(VER_YY 00)
 set(VER_ZZ 00)
 set(VER_FULL "${VER_X}.${VER_YY}.${VER_ZZ}")
 
-find_package(SDL 1.2 REQUIRED)
+if(AROS)
+    # AROS will provide the SDL dependency via makefile.
+else
+    find_package(SDL 1.2 REQUIRED)
+endif()
 
 set(
     SOURCES
