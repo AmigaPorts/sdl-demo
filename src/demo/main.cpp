@@ -1,6 +1,4 @@
 // Marlon Beijer, Demo SDL-1.2 Test
-
-
 #include <iostream>
 #include <math.h>
 #include <string>
@@ -8,7 +6,6 @@
 #pragma comment(lib, "SDLmain.lib")
 #pragma comment(lib, "SDL.lib")
 #endif
-
 #if _MSC_VER >= 1400
 extern "C" _CRTIMP extern FILE _iob[];
 extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
@@ -25,7 +22,7 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #include "font-16x16-1520x16.h"
 #include "stars.h"
 #include "moddata.h"
-#include "xmp.h"
+//#include "xmp.h"
 #ifdef __OSX__
 #include "CoreFoundation/CoreFoundation.h"
 #endif
@@ -147,11 +144,11 @@ static int playing;
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
-	if (xmp_play_buffer((xmp_context)udata, stream, len, 0) < 0)
+	//if (xmp_play_buffer((xmp_context)udata, stream, len, 0) < 0)
 		playing = 0;
 }
 
-static int init(xmp_context ctx)
+static int init()//xmp_context ctx)
 {
 	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) != 0 )
 	{
@@ -171,7 +168,7 @@ static int init(xmp_context ctx)
 	a.channels = 2;
 	a.samples = 2048;
 	a.callback = fill_audio;
-	a.userdata = ctx;
+//	a.userdata = ctx;
 
 	if (SDL_OpenAudio(&a, NULL) < 0) {
 		fprintf(stderr, "%s\n", SDL_GetError());
@@ -273,11 +270,11 @@ int main ( int argc, const char* argv[] )
     chdir(path); // error: expected constructor, destructor or type conversion before '(' token
     std::cout << "Current Path: " << path << std::endl; // error: expected constructor, destructor or type conversion before '<<' token
 #endif
-
+/*
 	xmp_context ctx;
 	ctx = xmp_create_context();
-
-	if (init(ctx) < 0)
+*/
+	if (init(/*ctx*/) < 0)
 	{
 		fprintf(stderr, "%s: can't initialize sound\n", argv[0]);
 		exit(1);
@@ -285,7 +282,7 @@ int main ( int argc, const char* argv[] )
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE | SDL_FULLSCREEN );
+	screen = SDL_SetVideoMode( WIDTH, HEIGHT, 16, SDL_HWSURFACE /*| SDL_FULLSCREEN*/ );
 
 	font2 = SDL_DisplayFormat( font2 );
 	SDL_SetColorKey( font2, SDL_SRCCOLORKEY, SDL_MapRGB( font2->format, 255, 0, 255) );
@@ -312,12 +309,12 @@ int main ( int argc, const char* argv[] )
 	double scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
-	int scnCnt = 0;
+	int scnCnt = 1;
 	const int sin_pos[] = {4,4,5,6,7,8,10,12,14,16,19,22,25,28,32,36,40,44,49,54,59,65,71,77,83,89,94,99,104,109,113,117,121,125,128,131,134,137,139,141,143,145,146,147,148,149,149,149,149,148,147,146,145,143,141,139,137,134,131,128,125,121,117,113,109,104,99,94,89,83,77,71,65,59,54,49,44,40,36,32,28,25,22,19,16,14,12,10,8,7,6,5,4,4};
 	const int sin_len = sizeof(sin_pos)/sizeof(sin_pos[0]);
 
 	char *tune = (char *)"blitz.mod";
-
+/*
 	if (xmp_load_module_from_memory(ctx, (void*)moddata, moddatalen) < 0)
 	{
 		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
@@ -325,6 +322,7 @@ int main ( int argc, const char* argv[] )
 	}
 
 	xmp_start_player(ctx, SAMPLERATE, 0);
+*/
 	SDL_PauseAudio(1);
 	int fade = 255;
 	SDL_Rect screenWH = { 0, 0, WIDTH, HEIGHT };
@@ -333,7 +331,7 @@ int main ( int argc, const char* argv[] )
 	{
 		//Start the frame timer
 		fps.start();
-
+/*
 		if (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
@@ -362,7 +360,7 @@ int main ( int argc, const char* argv[] )
 				}
 			}
 		}
-
+*/
 		SDL_FillRect( screen, NULL, SDL_MapRGB( screen->format, 0, 0, 0 ) );
 
 		int i = 0;
@@ -473,11 +471,11 @@ int main ( int argc, const char* argv[] )
 		}
 #endif
 	}
-
+/*
 	xmp_end_player(ctx);
 	xmp_release_module(ctx);
 	xmp_free_context(ctx);
-
+*/
 	SDL_CloseAudio();
 	SDL_FreeSurface(ball);
 	SDL_FreeSurface(stars);
