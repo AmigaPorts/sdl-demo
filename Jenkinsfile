@@ -27,6 +27,8 @@ def buildStep(ext) {
 node {
 	try{
 		stage('Checkout and pull') {
+			slackSend "started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+
 			properties([pipelineTriggers([githubPush()])])
 			if (env.CHANGE_ID) {
 				echo 'Trying to build pull request'
