@@ -59,7 +59,11 @@ node {
 		}
 
 		stage('Build AROS x86 ABI-v1 version') {
-			buildStep('aros-abiv1')
+			buildStep('aros-abiv1-x86')
+		}
+
+		stage('Build AROS x86_64 ABI-v1 version') {
+			buildStep('aros-abiv1-x86_64')
 		}
 
 		stage('Deploying to stage') {
