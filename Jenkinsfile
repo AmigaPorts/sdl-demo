@@ -27,7 +27,7 @@ def buildStep(ext) {
 node {
 	try{
 		stage('Checkout and pull') {
-			slackSend "started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+			slackSend color: good, message: "Build Started: ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
 
 			properties([pipelineTriggers([githubPush()])])
 			if (env.CHANGE_ID) {
@@ -80,10 +80,12 @@ node {
 				sh "scp publishing/deploy/sdl-demo/* $DEPLOYHOST:~/public_html/downloads/nightly/sdl-demo/`date +'%Y'`/`date +'%m'`/`date +'%d'`/"
 				sh "scp publishing/deploy/BUILDTIME $DEPLOYHOST:~/public_html/downloads/nightly/sdl-demo/"
 			}
+			slackSend color: good, message: "Build Succeeded: ${env.JOB_NAME}"
 		}
 	
 	} catch(err) {
 		currentBuild.result = 'FAILURE'
+		slackSend color: danger, message: "Build Failed: ${env.JOB_NAME}"
 		notify('Build failed')
 		throw err
 	}
