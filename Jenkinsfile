@@ -14,8 +14,6 @@ def notify(status){
 
 def buildStep(ext) {
 	stage('Checkout and pull') {
-		
-
 		properties([pipelineTriggers([githubPush()])])
 		if (env.CHANGE_ID) {
 			echo 'Trying to build pull request'
@@ -66,28 +64,34 @@ try{
 
 		parallel (
 			'Build WarpOS version': {
-				agent { label '!master' }
-				buildStep('wos')
+				node {
+					buildStep('wos')
+				}
 			},
 			'Build AmigaOS 3.x version': {
-				agent { label '!master' }
-				buildStep('68k')
+				node {
+					buildStep('68k')
+				}
 			},
 			'Build AmigaOS 4.x version': {
-				agent { label '!master' }
-				buildStep('os4')
+				node {
+					buildStep('os4')
+				}
 			},
 			'Build MorphOS 3.x version': {
-				agent { label '!master' }
-				buildStep('mos')
+				node {
+					buildStep('mos')
+				}
 			},
 			'Build AROS x86 ABI-v1 version': {
-				agent { label '!master' }
-				buildStep('aros-abiv1-x86')
+				node {
+					buildStep('aros-abiv1-x86')
+				}
 			},
 			'Build AROS x86_64 ABI-v1 version': {
-				agent { label '!master' }
-				buildStep('aros-abiv1-x86_64')
+				node {
+					buildStep('aros-abiv1-x86_64')
+				}
 			}
 		)
 	}
