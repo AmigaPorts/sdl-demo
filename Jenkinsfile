@@ -14,29 +14,29 @@ def notify(status){
 
 def buildStep(ext) {
 	stage("Building ${ext}...") {
-	properties([pipelineTriggers([githubPush()])])
-	if (env.CHANGE_ID) {
-		echo 'Trying to build pull request'
-	}
+		properties([pipelineTriggers([githubPush()])])
+		if (env.CHANGE_ID) {
+			echo 'Trying to build pull request'
+		}
 
-	checkout scm
+		checkout scm
 
-	if (!env.CHANGE_ID) {
-		sh "rm -rfv publishing/deploy/sdl-demo/sdl-demo.$ext"
-		sh "mkdir -p publishing/deploy/sdl-demo"
-	}
-	
-	sh "rm -rfv build-$ext"
-	sh "mkdir -p build-$ext"
-	sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/cmake$ext .."
-	sh "cd build-$ext && make -j8"
+		if (!env.CHANGE_ID) {
+			sh "rm -rfv publishing/deploy/sdl-demo/sdl-demo.$ext"
+			sh "mkdir -p publishing/deploy/sdl-demo"
+		}
 
-	if (!env.CHANGE_ID) {
-		sh "mv build-$ext/sdl-demo publishing/deploy/sdl-demo/sdl-demo.$ext"
-		//sh "cp publishing/amiga-spec/sdl-demo.info publishing/deploy/sdl-demo/sdl-demo.$ext.info"
-	}
+		sh "rm -rfv build-$ext"
+		sh "mkdir -p build-$ext"
+		sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/cmake$ext .."
+		sh "cd build-$ext && make -j8"
 
-		stage('Deploying $ext to stage!') {
+		if (!env.CHANGE_ID) {
+			sh "mv build-$ext/sdl-demo publishing/deploy/sdl-demo/sdl-demo.$ext"
+			//sh "cp publishing/amiga-spec/sdl-demo.info publishing/deploy/sdl-demo/sdl-demo.$ext.info"
+		}
+
+		stage("Deploying ${ext} to stage!") {
 			if (env.TAG_NAME) {
 				sh "echo $TAG_NAME > publishing/deploy/STABLE"
 				sh "ssh $DEPLOYHOST mkdir -p public_html/downloads/releases/sdl-demo/$TAG_NAME"
