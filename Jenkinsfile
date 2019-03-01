@@ -64,33 +64,28 @@ try{
 	node {
 		slackSend color: "good", message: "Build Started: ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
 
-		parallel {
-			stage('Build WarpOS version') {
+		parallel (
+			'Build WarpOS version': {
 				agent { label '!master' }
 				buildStep('wos')
-			}
-
-			stage('Build AmigaOS 3.x version') {
+			},
+			'Build AmigaOS 3.x version': {
 				agent { label '!master' }
 				buildStep('68k')
-			}
-
-			stage('Build AmigaOS 4.x version') {
+			},
+			'Build AmigaOS 4.x version': {
 				agent { label '!master' }
 				buildStep('os4')
-			}
-
-			stage('Build MorphOS 3.x version') {
+			},
+			'Build MorphOS 3.x version': {
 				agent { label '!master' }
 				buildStep('mos')
-			}
-
-			stage('Build AROS x86 ABI-v1 version') {
+			},
+			'Build AROS x86 ABI-v1 version': {
 				agent { label '!master' }
 				buildStep('aros-abiv1-x86')
-			}
-
-			stage('Build AROS x86_64 ABI-v1 version') {
+			},
+			'Build AROS x86_64 ABI-v1 version': {
 				agent { label '!master' }
 				buildStep('aros-abiv1-x86_64')
 			}
