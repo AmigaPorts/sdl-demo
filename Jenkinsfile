@@ -13,6 +13,7 @@ def notify(status){
 }
 
 def buildStep(ext) {
+	stage("Building ${ext}...") {
 	properties([pipelineTriggers([githubPush()])])
 	if (env.CHANGE_ID) {
 		echo 'Trying to build pull request'
@@ -25,31 +26,30 @@ def buildStep(ext) {
 		sh "mkdir -p publishing/deploy/sdl-demo"
 	}
 	
-	stage("Building ${ext}...") {
-		sh "rm -rfv build-$ext"
-		sh "mkdir -p build-$ext"
-		sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/cmake$ext .."
-		sh "cd build-$ext && make -j8"
-			
-		if (!env.CHANGE_ID) {
-			sh "mv build-$ext/sdl-demo publishing/deploy/sdl-demo/sdl-demo.$ext"
-			//sh "cp publishing/amiga-spec/sdl-demo.info publishing/deploy/sdl-demo/sdl-demo.$ext.info"
-		}
+	sh "rm -rfv build-$ext"
+	sh "mkdir -p build-$ext"
+	sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/cmake$ext .."
+	sh "cd build-$ext && make -j8"
+
+	if (!env.CHANGE_ID) {
+		sh "mv build-$ext/sdl-demo publishing/deploy/sdl-demo/sdl-demo.$ext"
+		//sh "cp publishing/amiga-spec/sdl-demo.info publishing/deploy/sdl-demo/sdl-demo.$ext.info"
 	}
-	
-	stage('Deploying $ext to stage!') {
-		if (env.TAG_NAME) {
-			sh "echo $TAG_NAME > publishing/deploy/STABLE"
-			sh "ssh $DEPLOYHOST mkdir -p public_html/downloads/releases/sdl-demo/$TAG_NAME"
-			sh "scp publishing/deploy/sdl-demo/* $DEPLOYHOST:~/public_html/downloads/releases/sdl-demo/$TAG_NAME/"
-			sh "scp publishing/deploy/STABLE $DEPLOYHOST:~/public_html/downloads/releases/sdl-demo/"
-		} else if (env.BRANCH_NAME.equals('master')) {
-			sh "date +'%Y-%m-%d %H:%M:%S' > publishing/deploy/BUILDTIME"
-			sh "ssh $DEPLOYHOST mkdir -p public_html/downloads/nightly/sdl-demo/`date +'%Y'`/`date +'%m'`/`date +'%d'`/"
-			sh "scp publishing/deploy/sdl-demo/* $DEPLOYHOST:~/public_html/downloads/nightly/sdl-demo/`date +'%Y'`/`date +'%m'`/`date +'%d'`/"
-			sh "scp publishing/deploy/BUILDTIME $DEPLOYHOST:~/public_html/downloads/nightly/sdl-demo/"
+
+		stage('Deploying $ext to stage!') {
+			if (env.TAG_NAME) {
+				sh "echo $TAG_NAME > publishing/deploy/STABLE"
+				sh "ssh $DEPLOYHOST mkdir -p public_html/downloads/releases/sdl-demo/$TAG_NAME"
+				sh "scp publishing/deploy/sdl-demo/* $DEPLOYHOST:~/public_html/downloads/releases/sdl-demo/$TAG_NAME/"
+				sh "scp publishing/deploy/STABLE $DEPLOYHOST:~/public_html/downloads/releases/sdl-demo/"
+			} else if (env.BRANCH_NAME.equals('master')) {
+				sh "date +'%Y-%m-%d %H:%M:%S' > publishing/deploy/BUILDTIME"
+				sh "ssh $DEPLOYHOST mkdir -p public_html/downloads/nightly/sdl-demo/`date +'%Y'`/`date +'%m'`/`date +'%d'`/"
+				sh "scp publishing/deploy/sdl-demo/* $DEPLOYHOST:~/public_html/downloads/nightly/sdl-demo/`date +'%Y'`/`date +'%m'`/`date +'%d'`/"
+				sh "scp publishing/deploy/BUILDTIME $DEPLOYHOST:~/public_html/downloads/nightly/sdl-demo/"
+			}
+			slackSend color: "good", message: "Build Succeeded: ${env.JOB_NAME}"
 		}
-		slackSend color: "good", message: "Build Succeeded: ${env.JOB_NAME}"
 	}
 }
 
