@@ -89,7 +89,7 @@ try{
 				agent { label '!master' }
 				buildStep('aros-abiv1-x86_64')
 			}
-		}
+		)
 	}
 } catch(err) {
 	currentBuild.result = 'FAILURE'
