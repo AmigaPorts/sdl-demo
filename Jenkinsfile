@@ -13,7 +13,6 @@ def notify(status){
 }
 
 def buildStep(ext) {
-	agent { label '!master' }
 	stage('Checkout and pull') {
 		
 
@@ -62,35 +61,45 @@ def buildStep(ext) {
 
 
 try{
-pipeline {
-	slackSend color: "good", message: "Build Started: ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+	pipeline {
+		agent { label '!master' }
 
-	parallel {
-		stage('Build WarpOS version') {
-			buildStep('wos')
-		}
+		stages {
+			slackSend color: "good", message: "Build Started: ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
 
-		stage('Build AmigaOS 3.x version') {
-			buildStep('68k')
-		}
+			parallel {
+				stage('Build WarpOS version') {
+					agent { label '!master' }
+					buildStep('wos')
+				}
 
-		stage('Build AmigaOS 4.x version') {
-			buildStep('os4')
-		}
+				stage('Build AmigaOS 3.x version') {
+					agent { label '!master' }
+					buildStep('68k')
+				}
 
-		stage('Build MorphOS 3.x version') {
-			buildStep('mos')
-		}
+				stage('Build AmigaOS 4.x version') {
+					agent { label '!master' }
+					buildStep('os4')
+				}
 
-		stage('Build AROS x86 ABI-v1 version') {
-			buildStep('aros-abiv1-x86')
-		}
+				stage('Build MorphOS 3.x version') {
+					agent { label '!master' }
+					buildStep('mos')
+				}
 
-		stage('Build AROS x86_64 ABI-v1 version') {
-			buildStep('aros-abiv1-x86_64')
+				stage('Build AROS x86 ABI-v1 version') {
+					agent { label '!master' }
+					buildStep('aros-abiv1-x86')
+				}
+
+				stage('Build AROS x86_64 ABI-v1 version') {
+					agent { label '!master' }
+					buildStep('aros-abiv1-x86_64')
+				}
+			}
 		}
 	}
-}
 } catch(err) {
 	currentBuild.result = 'FAILURE'
 	slackSend color: "danger", message: "Build Failed: ${env.JOB_NAME}"
