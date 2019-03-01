@@ -35,7 +35,7 @@ def buildStep(ext) {
 	stage('Building...') {
 		sh "rm -rfv build-$ext"
 		sh "mkdir -p build-$ext"
-		sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/cmake$ext .."
+		sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/cmake$ext .."
 		sh "cd build-$ext && make -j8"
 			
 		if (!env.CHANGE_ID) {
@@ -62,6 +62,7 @@ def buildStep(ext) {
 
 
 try{
+pipeline {
 	slackSend color: "good", message: "Build Started: ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
 
 	parallel {
@@ -89,6 +90,7 @@ try{
 			buildStep('aros-abiv1-x86_64')
 		}
 	}
+}
 } catch(err) {
 	currentBuild.result = 'FAILURE'
 	slackSend color: "danger", message: "Build Failed: ${env.JOB_NAME}"
