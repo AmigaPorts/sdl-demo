@@ -13,23 +13,19 @@ def notify(status){
 }
 
 def buildStep(ext) {
-	stage('Checkout and pull') {
-		properties([pipelineTriggers([githubPush()])])
-		if (env.CHANGE_ID) {
-			echo 'Trying to build pull request'
-		}
-
-		checkout scm
+	properties([pipelineTriggers([githubPush()])])
+	if (env.CHANGE_ID) {
+		echo 'Trying to build pull request'
 	}
+
+	checkout scm
 
 	if (!env.CHANGE_ID) {
-		stage('Generate publishing directories') {
-			sh "rm -rfv publishing/deploy/*"
-			sh "mkdir -p publishing/deploy/sdl-demo"
-		}
+		sh "rm -rfv publishing/deploy/sdl-demo/sdl-demo.$ext"
+		sh "mkdir -p publishing/deploy/sdl-demo"
 	}
 	
-	stage('Building...') {
+	stage("Building ${ext}...") {
 		sh "rm -rfv build-$ext"
 		sh "mkdir -p build-$ext"
 		sh "cd build-$ext && cmake -DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/cmake$ext .."
@@ -41,7 +37,7 @@ def buildStep(ext) {
 		}
 	}
 	
-	stage('Deploying to stage') {
+	stage('Deploying $ext to stage!') {
 		if (env.TAG_NAME) {
 			sh "echo $TAG_NAME > publishing/deploy/STABLE"
 			sh "ssh $DEPLOYHOST mkdir -p public_html/downloads/releases/sdl-demo/$TAG_NAME"
