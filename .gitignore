@@ -37,3 +37,10 @@ x64/
 *.idb
 .vs/
 *.sln
+
+\.idea/
+*.swp
+
+# CMake
+build*/
+cmake*/
