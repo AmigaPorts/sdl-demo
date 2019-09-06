@@ -48,8 +48,7 @@ int main( int argc, char **argv )
 #endif
 
 /* can play only one file at a time */
-//unsigned char *SND_curmod = NULL;
-//PROTOHEADER static APTR SND_curmod2;
+unsigned char *SND_curmod = NULL;
 unsigned char SND_playing = 0;
 
 /* sanity check for input file: accept mods <= 2MB */
@@ -86,15 +85,12 @@ unsigned char *SND_LoadModule( char *path )
 	return buf;
 }
 
-PROTOHEADER void SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen )
+unsigned char* SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen)
 {
-	unsigned char *buf = NULL;
-	if (buf = AllocMem( moddatalen, MEMF_CHIP )) {
-		memcpy(buf, moddata, moddatalen);
-
-		SND_curmod2 = buf;
-		//PT_StartPlay(SND_curmod2);
-		SDL_PauseAudio(0);
+	//unsigned char *buf = NULL;
+	if (SND_curmod = AllocVec( moddatalen, MEMF_CHIP )) {
+		memcpy(SND_curmod, moddata, moddatalen);
+		return SND_curmod;
 	} else {
 		printf("failed to load");
 	}
@@ -121,14 +117,14 @@ PROTOHEADER int SND_EjectModule( unsigned char *buf )
 PROTOHEADER int SND_PlayModule( unsigned char *buf )
 {
 	if( !buf )
-		buf = SND_curmod2;
+		buf = SND_curmod;
 
 	if( buf )
 	{
 		if( SND_playing )
 			PT_StopPlay();
 
-		SND_curmod2 = buf;
+		SND_curmod = buf;
 		PT_StartPlay( buf );
 		SND_playing = 1;
 
@@ -138,13 +134,9 @@ PROTOHEADER int SND_PlayModule( unsigned char *buf )
 		return	0;
 }
 
-PROTOHEADER void SDL_PauseAudio( int pause_on )
+void SDL_PauseAudio( int pause_on )
 {
-	unsigned char *buf = NULL;
-	if( !buf )
-		buf = &SND_curmod2;
-
-	if( buf )
+	if( SND_curmod )
 	{
 		if( pause_on == 1 )
 		{
@@ -155,13 +147,13 @@ PROTOHEADER void SDL_PauseAudio( int pause_on )
 		}
 		else
 		{
-			PT_StartPlay( buf );
+			PT_StartPlay( SND_curmod );
 			SND_playing = 1;
 		}
 	}
 	else
 	{
-		printf("failed to load song from mem");
+		//printf("failed to load song from mem");
 	}
 }
 

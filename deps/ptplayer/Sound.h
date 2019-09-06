@@ -7,11 +7,11 @@
 #else
 #define PROTOHEADER
 #endif
-PROTOHEADER unsigned char *SND_curmod2;
+//PROTOHEADER unsigned char *SND_curmod2;
 PROTOHEADER unsigned char *SND_LoadModule( char *path );
 /* load and play (if path is empty, resume) */
 PROTOHEADER int SND_PlayModule( unsigned char *buf );
-PROTOHEADER void SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen );
+PROTOHEADER unsigned char* SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen );
 PROTOHEADER void SDL_PauseAudio( int pause_on );
 
 /* stop playing but keep module */

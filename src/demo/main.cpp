@@ -330,7 +330,7 @@ int main(int argc, const char *argv[])
 
 	xmp_start_player(ctx, SAMPLERATE, 0);
 #else
-	SND_LoadModuleFromMemory((void*)moddata, moddatalen);
+	SND_LoadModuleFromMemory(moddata, moddatalen);
 #endif
 
 	SDL_PauseAudio(1);
