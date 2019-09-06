@@ -21,12 +21,16 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #include "timer.h"
 #include "star_bmp.h"
 #include "hex2surface.h"
-#include "image.h"
+#include "font.h"
 #include "ball.h"
 #include "font-16x16-1520x16.h"
 #include "stars.h"
 #include "moddata.h"
+#ifndef __AMIGA__
 #include "xmp.h"
+#else
+#include "Sound.h"
+#endif
 
 #ifdef __OSX__
 #include "CoreFoundation/CoreFoundation.h"
@@ -34,7 +38,7 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 
 using namespace std;
 const static int WIDTH = 320;
-const static int HEIGHT = 240;
+const static int HEIGHT = 200;
 const static int SAMPLERATE = 44100;
 const static double SCROLLER_SPEED = 3.67;
 const static int SCROLLER_TEXT_HEIGHT = 16;
@@ -48,7 +52,7 @@ static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
 static SDL_Surface *screen;
 const static int ballrec =
 #ifdef __AMIGA__
-		130
+		230
 #else
 		230
 #endif
@@ -156,16 +160,22 @@ static void star_randomize() {
 static int playing;
 
 static void fill_audio(void *udata, Uint8 *stream, int len) {
+#ifndef __AMIGA__
 	if (xmp_play_buffer((xmp_context) udata, stream, len, 0) < 0)
 		playing = 0;
+#endif
 }
 
-static int init(xmp_context ctx) {
+static int init(
+#ifndef __AMIGA__
+		xmp_context ctx
+#endif
+) {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
 		return -1;
 	}
-
+#ifndef __AMIGA__
 	SDL_AudioSpec a;
 
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -184,7 +194,7 @@ static int init(xmp_context ctx) {
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
-
+#endif
 	atexit(SDL_Quit);
 	return 0;
 }
@@ -256,36 +266,45 @@ int main(int argc, const char *argv[])
 	std::cout << "Current Path: " << path << std::endl; // error: expected constructor, destructor or type conversion before '<<' token
 #endif
 
+#ifndef __AMIGA__
 	xmp_context ctx;
 	ctx = xmp_create_context();
-
-	if (init(ctx) < 0) {
+#endif
+	if (init(
+#ifndef __AMIGA__
+		ctx
+#endif
+) < 0) {
 		fprintf(stderr, "%s: can't initialize sound\n", argv[0]);
 		exit(1);
 	}
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 8, SDL_SWSURFACE | SDL_FULLSCREEN);
+	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 8, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_HWPALETTE);
 
 	font2 = SDL_DisplayFormat(font2);
 	SDL_SetColorKey(font2, SDL_SRCCOLORKEY, SDL_MapRGB(font2->format, 255, 0, 255));
 
-	if (screen == NULL) {
+	if (screen == nullptr) {
 		exit(0);
 	}
 
+	SDL_SetPalette(screen,SDL_LOGPAL|SDL_PHYSPAL, colors, 0, 256);
+
 	star_randomize();
 
-	SDL_Surface *font = Hex2Surface(image, 864, 32);
+	SDL_Surface *font = Hex2Surface(hexfont, 320, 48);
 	SDL_Surface *ball = Hex2Surface(hexball, 8, 8);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
 
 	font = SDL_DisplayFormat(font);
 	ball = SDL_DisplayFormat(ball);
+	stars = SDL_DisplayFormat(stars);
 
 	SDL_SetColorKey(font, SDL_SRCCOLORKEY, SDL_MapRGB(font->format, 255, 0, 255));
-	SDL_SetColorKey(ball, SDL_SRCCOLORKEY, SDL_MapRGB(ball->format, 255, 0, 255));
+	SDL_SetColorKey(ball, SDL_SRCCOLORKEY, SDL_MapRGB(screen->format, 255, 0, 255));
+	SDL_SetColorKey(stars, SDL_SRCCOLORKEY, SDL_MapRGB(screen->format, 255, 0, 255));
 
 	SDL_Event event;
 
@@ -301,16 +320,21 @@ int main(int argc, const char *argv[])
 						   16, 14, 12, 10, 8, 7, 6, 5, 4, 4};
 	const int sin_len = sizeof(sin_pos) / sizeof(sin_pos[0]);
 
-	char *tune = (char *) "blitz.mod";
+	char *tune = (char *) "aurora.mod";
 
+#ifndef __AMIGA__
 	if (xmp_load_module_from_memory(ctx, (void *) moddata, moddatalen) < 0) {
 		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
 		exit(0);
 	}
 
 	xmp_start_player(ctx, SAMPLERATE, 0);
+#else
+	SND_LoadModuleFromMemory((void*)moddata, moddatalen);
+#endif
 
 	SDL_PauseAudio(1);
+
 	int fade = 255;
 	SDL_Rect screenWH = {0, 0, WIDTH, HEIGHT};
 
@@ -360,9 +384,7 @@ int main(int argc, const char *argv[])
 			SDL_Rect box = {0, 0, WIDTH, 5};
 			for (int v = 0; v < HEIGHT / 5; v++) {
 				box.y = v * 5;
-				SDL_FillRect(screen, &box,
-							 SDL_MapRGB(screen->format, (int) ceil(rand() / 255), (int) ceil(rand() / 255),
-										(int) ceil(rand() / 255)));
+				SDL_FillRect(screen, &box, (int)ceil(rand() / 254)+1);
 			}
 		} else {
 			SDL_Rect box = {0, SCROLLER_Y_TOP / 2, WIDTH, 1};
@@ -377,36 +399,40 @@ int main(int argc, const char *argv[])
 		}
 
 		if (scnCnt == 0) {
-			scr = -((WIDTH / 2) - 8 * 16);
+			scr = -((WIDTH / 2) - 8 * 8);
 			for (const char &c : SCROLLER_TEXT[textCnt]) {
-				int fnt = c - 64;
+				int fnt = c - 65;
 				int offsetY = 0;
+				int letterX = 16*fnt - (((16 * fnt)/320)*320);
+				int letterY = (int((16 * fnt)/320)*16);
 
-				if ((32 * i) - scr < WIDTH && (32 * i) - scr > -32) {
-					blit(font, screen, 32 * fnt, 0, (int) ((32 * i) - scr), SCROLLER_Y_TOP + offsetY - 16, 32, 32);
+				if ((16 * i) - scr < WIDTH && (16 * i) - scr > -16) {
+					blit(font, screen, letterX, letterY, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
 				}
 
 				i++;
 			}
 
-			DrawText(font2, screen, (WIDTH / 2) - ((16 * 11) / 2), SCROLLER_Y_TOP + 32, 16, 16, "PRESS ENTER");
+			DrawText(font, screen, (WIDTH / 2) - ((16 * 11) / 2), SCROLLER_Y_TOP + 32, 16, 16, "PRESS ENTER");
 
 		} else if (scnCnt == 1) {
 			for (const char &c : SCROLLER_TEXT[textCnt]) {
-				int fnt = c - 64;
+				int fnt = c - 65;
 				int offsetY = 0;
+				int letterX = 16*fnt - (((16 * fnt)/320)*320);
+				int letterY = (int((16 * fnt)/320)*16);
 
 				offsetY = sin_cnt + i;
 
 				if (offsetY >= sin_len)
 					offsetY -= sin_len;
 
-				offsetY = sin_pos[offsetY] - (149 / 2);
+				offsetY = (sin_pos[offsetY] - (149 / 2))/2;
 
-				if ((32 * i) - scr < WIDTH && (32 * i) - scr > -32) {
-					DrawText(font2, screen, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 16, 16, 16,
-							 SCROLLER_TEXT[textCnt]);
-					blit( font, screen, 32*fnt, 0, (int)((32*i)-scr), SCROLLER_Y_TOP + offsetY - 32, 32, 32 );
+				if ((16 * i) - scr < WIDTH && (16 * i) - scr > -16) {
+					//DrawText(font2, screen, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 16, 16, 16,
+					//		 SCROLLER_TEXT[textCnt]);
+					blit( font, screen, letterX, letterY, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
 				}
 
 				i++;
@@ -436,11 +462,14 @@ int main(int argc, const char *argv[])
 //#endif
 	}
 
+#ifndef __AMIGA__
 	xmp_end_player(ctx);
 	xmp_release_module(ctx);
 	xmp_free_context(ctx);
-
 	SDL_CloseAudio();
+#else
+	SND_StopModule();
+#endif
 	SDL_FreeSurface(ball);
 	SDL_FreeSurface(stars);
 	SDL_FreeSurface(font);
