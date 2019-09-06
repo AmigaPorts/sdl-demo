@@ -22,7 +22,11 @@
 #include <proto/cybergraphics.h>
 #include <math.h>
 #include "video.h"
-
+#include "vga.h"
+#include "screen.h"
+#include "amigaport.h"
+#include "gfxtypes.h"
+#include "gfx.h"
 
 
 #define REG(xn, parm) parm __asm(#xn)
@@ -69,7 +73,7 @@ extern int isRTG;
 extern int cpu_type;
 extern void mmu_stuff2(void);
 extern void mmu_stuff2_cleanup(void);
- 
+extern s_screen *vscreen;
 
 int mmu_chunky = 0;
 int mmu_active = 0;
@@ -252,28 +256,84 @@ void start_aga()
     SetPointer (_hardwareWindow, emptypointer, 1, 16, 0, 0);
 }
 
+int video_set_mode(s_videomodes videomodes) {
+ 
+    unsigned char *pix;
+    char titlebuffer[256];
+    static int    firsttime=1;
+    uint i = 0;
+
+    
+    if(videomodes.hRes==0 && videomodes.vRes == 0)
+    {
+        return 0;
+    } 
+  
+    _hardwareWindow = NULL;
+    _hardwareScreenBuffer[0] = NULL;
+    _hardwareScreenBuffer[1] = NULL;
+    _currentScreenBuffer = 0;
+    _hardwareScreen = NULL;
+    
+    bpp = videomodes.pixel;
+	width = videomodes.hRes;
+	height = videomodes.vRes;
+	if(videomodes.hRes==480) mode = 1;    
+	
+
+    if (firsttime)
+    {
+        firsttime = 0;
+        
+        if (isRTG) 
+        {
+            vidMode = VideoModeRTG;
+            start_rtg();            
+        }
+        else
+        {
+            vidMode = VideoModeAGA;
+            start_aga();
+        }
+       
+    }
+
+	return 1;
+}
 
 
+void vga_vwait(void) {
+	static int prevtick = 0;
+	int now = timer_gettick();
+	int wait = 1000 / 60 - (now - prevtick);
+	if(wait > 0) {
+		sleep(wait);
+	} else
+		sleep(1);
+	prevtick = now;
+}
 
-int video_copy_screen() {
+
+int video_copy_screen(s_screen * src) {
 
     UBYTE *base_address;
-  
+    filecache_process();
+
     if (vidMode == VideoModeAGA)
     {    
-        //c2p1x1_8_c5_bm_040(320,240,0,0,src->data,_hardwareScreenBuffer[_currentScreenBuffer]->sb_BitMap);
-        //ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer]); 
-        //_currentScreenBuffer = _currentScreenBuffer ^ 1;	 
+        c2p1x1_8_c5_bm_040(320,240,0,0,src->data,_hardwareScreenBuffer[_currentScreenBuffer]->sb_BitMap);
+        ChangeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[_currentScreenBuffer]); 
+        _currentScreenBuffer = _currentScreenBuffer ^ 1;	 
     }
     else
     {
-//        video_bitmap_handle = LockBitMapTags (_hardwareScreen->ViewPort.RasInfo->BitMap,
-//                                              LBMI_BASEADDRESS, &base_address,
-//                                              TAG_DONE);
+        video_bitmap_handle = LockBitMapTags (_hardwareScreen->ViewPort.RasInfo->BitMap,
+                                              LBMI_BASEADDRESS, &base_address,
+                                              TAG_DONE);
         if (video_bitmap_handle) {
-//            CopyMem (src->data, base_address, 320 * 240);
- //           UnLockBitMap (video_bitmap_handle);
-//            video_bitmap_handle = NULL;        
+            CopyMem (src->data, base_address, 320 * 240);
+            UnLockBitMap (video_bitmap_handle);
+            video_bitmap_handle = NULL;        
         } 
         
     }
