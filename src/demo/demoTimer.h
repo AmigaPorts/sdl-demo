@@ -1,3 +1,8 @@
+#ifndef _DEMOTIMER_H
+#define _DEMOTIMER_H
+#ifdef __AMIGA__
+#include "timer.h"
+#endif
 class Timer
 {
 	private:
@@ -28,3 +33,4 @@ class Timer
 	bool is_started();
 	bool is_paused();
 };
+#endif

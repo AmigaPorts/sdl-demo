@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.5)
-project(SDL-demo)
+
+project(SDL-demo C CXX ASM)
 
 # Adhere to GNU filesystem layout conventions
 include(GNUInstallDirs)
@@ -21,34 +22,42 @@ set(VER_FULL "${VER_X}.${VER_YY}.${VER_ZZ}")
 
 if(AROS)
 	# AROS will provide the SDL dependency via makefile.
+elseif(AMIGAOS3)
+	# asd
 else()
 	find_package(SDL 1.2 REQUIRED)
-	if(NOT AMIGA)
-		find_package(XMP 4.0 REQUIRED)
-
-	endif()
+	find_package(XMP 4.0 REQUIRED)
 endif()
 
-set(
-		SOURCES
+
+set(SOURCES
 		src/demo/star_bmp.cpp
 		src/demo/hex2surface.cpp
-		src/demo/timer.cpp
+		src/demo/demoTimer.cpp
 		src/demo/main.cpp)
 
 if(AMIGAOS3)
-	set(PT_SOURCES deps/ptplayer/Sound.c)
+	set(PT_SOURCES deps/ptplayer/Sound.c deps/ptplayer/PTPlay30B.s)
+
+	set(AMIGA_SOURCES
+			deps/amiga/c2p1x1_8_c5_bm.s
+			deps/amiga/amiga_timer.c
+			deps/amiga/control.c
+			deps/amiga/video.c
+	)
+	add_library(amigavideo ${AMIGA_SOURCES})
 	add_library(ptplayer ${PT_SOURCES})
-	include_directories(${PROJECT_SOURCE_DIR}/deps/ptplayer/)
-	#target_compile_options(ptplayer PRIVATE -fbaserel32 -msmall-code)
-	#target_link_options(ptplayer PRIVATE -fbaserel32 -msmall-code)
-	target_link_libraries(ptplayer ${PROJECT_SOURCE_DIR}/deps/ptplayer/PTPlay30B.o)
+	include_directories(${PROJECT_SOURCE_DIR}/deps/ptplayer/ ${PROJECT_SOURCE_DIR}/deps/amiga/)
+else()
+	include_directories(
+		${SDL_INCLUDE_DIR}
+		${XMP_INCLUDE_DIR}
+	)
 endif()
 
 include_directories(
-		${SDL_INCLUDE_DIR}
-		${XMP_INCLUDE_DIR}
-		${PROJECT_SOURCE_DIR}/src/demo
+	${PROJECT_SOURCE_DIR}/src/demo
+	${PROJECT_SOURCE_DIR}/src/assets
 )
 
 add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
@@ -57,7 +66,7 @@ if(MORPHOS AND NOT WARPOS)
 elseif(AROS)
 	target_link_libraries(${TARGET_NAME} -lSDL -lxmp)
 elseif(AMIGAOS3)
-	target_link_libraries(${TARGET_NAME} ptplayer -lSDL -ldebug)
+	target_link_libraries(${TARGET_NAME} amigavideo ptplayer -lamiga)
 else()
 	target_link_libraries(${TARGET_NAME} ${SDL_LIBRARY} ${XMP_LIBRARY})
 endif()

@@ -100,12 +100,12 @@ unsigned char* SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen)
 /*
   stop playing and discard module
 */
-PROTOHEADER int SND_EjectModule( unsigned char *buf )
+int SND_EjectModule( void )
 {
-	if( buf )
+	if( SND_curmod )
 	{
 		SND_StopModule();
-		FreeVec( buf );
+		FreeVec( SND_curmod );
 	}
 }
 

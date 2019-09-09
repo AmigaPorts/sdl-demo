@@ -24,8 +24,8 @@
 #include <proto/lowlevel.h>
 
 #include "video.h"
-#include "globals.h"
-#include "stristr.h"
+//#include "globals.h"
+//#include "stristr.h"
 #include "sblaster.h"
 #include "joysticks.h"
 #include "control.h"
@@ -46,7 +46,7 @@
 struct Library *LowLevelBase=NULL;
 extern struct Window *_hardwareWindow;
 extern struct ExecBase *SysBase;
-extern int quit_game;
+int quit_game = 0;
 unsigned long getPad();
 
 static unsigned long lastkey = 0;                                
@@ -54,7 +54,7 @@ static unsigned long lastkey = 0;
 Reset All data back to Zero and
 destroy all SDL Joystick data.
 */
-void control_exit() {
+void destroyControls() {
 
     if (LowLevelBase)
     {
@@ -68,7 +68,7 @@ void control_exit() {
 Create default values for joysticks if enabled.
 Then scan for joysticks and update their data.
 */
-void control_init(int joy_enable) {
+void initControls() {
  
      if(!LowLevelBase) LowLevelBase = (struct Library *) OpenLibrary((UBYTE *)"lowlevel.library",0);
     
@@ -123,9 +123,6 @@ int control_scankey() {
     return (getPad() & 0x3ff);    
 }
 
-
-#define KEY_RETURN (0x44)
-#define KEY_F10    (0x59)
  
 unsigned long getKey()
 {
@@ -194,14 +191,14 @@ unsigned long getPad()
                 if(data&JPF_BUTTON_RED)
                 {
                     btns |= JPF_BUTTON_RED;
-                    PDEBUG("Fire 1 Pressed\n");
+//                    PDEBUG("Fire 1 Pressed\n");
                 }
 
 
                 if(data&JPF_BUTTON_BLUE)
                 {
                     btns |= JPF_BUTTON_BLUE;
-                    PDEBUG("Fire 2 Pressed\n");
+//                    PDEBUG("Fire 2 Pressed\n");
                 }
                 
                 if ((data&JPF_BUTTON_BLUE) && (data&JPF_BUTTON_RED))
@@ -231,14 +228,14 @@ unsigned long getPad()
                 if(data&JPF_BUTTON_RED)
                 {
                     btns |= JPF_BUTTON_RED;
-                    PDEBUG("Fire 1 Pressed\n");
+//                    PDEBUG("Fire 1 Pressed\n");
                 }
 
 
                 if(data&JPF_BUTTON_BLUE)
                 {
                     btns |= JPF_BUTTON_BLUE;
-                    PDEBUG("Fire 2 Pressed\n");
+//                    PDEBUG("Fire 2 Pressed\n");
                 }
                 
                 if (data&JPF_BUTTON_YELLOW)

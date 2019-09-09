@@ -1,5 +1,7 @@
+#ifndef __AMIGA__
 #include <SDL.h>
-#include "timer.h"
+#endif
+#include "demoTimer.h"
 
 Timer::Timer()
 {

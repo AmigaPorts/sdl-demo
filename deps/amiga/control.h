@@ -8,9 +8,18 @@
 
 #ifndef	CONTROL_H
 #define	CONTROL_H
- 
+#ifdef __cplusplus
+#define PROTOHEADER extern "C"
+#else
+#define PROTOHEADER
+#endif
 #include "joysticks.h" 
+#include <stdint.h>
+PROTOHEADER int quit_game;
+PROTOHEADER unsigned long getKey(void);
 
+#define KEY_RETURN (0x44)
+#define KEY_F10    (0x59)
 /* Port types */
 #define JP_TYPE_NOTAVAIL  (00<<28)	  /* port data unavailable    */
 #define JP_TYPE_GAMECTLR  (01<<28)	  /* port has game controller */
@@ -98,7 +107,7 @@
 #define CONTROL_DEFAULT2_JUMP    (0x800)
 #define CONTROL_DEFAULT2_START   (0x800)
 #define CONTROL_DEFAULT2_SCREENSHOT (0x800)
-
+#define u32 uint32_t
 
 
 typedef struct {
@@ -107,8 +116,8 @@ typedef struct {
 	int kb_break;
 } s_playercontrols;
 
-void control_exit();
-void control_init(int joy_enable);
+void destroyControls();
+void initControls();
 int control_usejoy(int enable);
 int control_getjoyenabled();
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <proto/timer.h>
 #include <devices/timer.h>
 #include <proto/exec.h>
  
@@ -10,7 +11,7 @@
 static ULONG basetime = 0;
 struct MsgPort *timer_msgport;
 struct timerequest *timer_ioreq;
-struct Library *TimerBase;
+struct Device* TimerBase;
 
 static int opentimer(ULONG unit){
 	timer_msgport = CreateMsgPort();
@@ -69,26 +70,41 @@ int getTimeMS(void)
 // Sleep for a specified number of ms
 
 
-void exitTimer()
-{
+void exitTimer() {
     closetimer();
 }
 
-void sleep(int ms)
-{
+void sleep(int ms) {
     usleep(ms);
 }
 
-void waitVBL(int count)
-{
+void waitVBL(int count) {
     sleep((count * 1000) / 70);
 }
- 
 
-void initTimer(void)
-{
-    // initialize timer
-
+void initTimer() {
    opentimer(UNIT_VBLANK);
    timerStartup();
+}
+
+#define GETTIME_FREQ (1000)
+
+static unsigned lastinterval = 0;
+
+
+uint32_t SDL_GetTicks() {
+	return getMilliseconds();
+}
+
+
+unsigned timer_getinterval(unsigned freq) {
+	unsigned tickspassed, ebx, blocksize, now;
+	now = SDL_GetTicks();
+	ebx = now - lastinterval;
+	blocksize = GETTIME_FREQ / freq;
+	ebx += GETTIME_FREQ % freq;
+	tickspassed = ebx / blocksize;
+	ebx -= ebx % blocksize;
+	lastinterval += ebx;
+	return tickspassed;
 }

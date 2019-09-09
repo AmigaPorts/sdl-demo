@@ -17,7 +17,7 @@ PROTOHEADER void SDL_PauseAudio( int pause_on );
 /* stop playing but keep module */
 PROTOHEADER int SND_StopModule( void );
 /* clear module */
-PROTOHEADER int SND_EjectModule( unsigned char*buf );
+PROTOHEADER int SND_EjectModule( void );
 
 PROTOHEADER void SND_SetFXChannel( unsigned int channel );
 PROTOHEADER void SND_SetFX( unsigned int fx );

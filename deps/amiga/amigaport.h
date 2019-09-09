@@ -13,7 +13,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
-#include "globals.h"
+//#include "globals.h"
 
 #define stricmp  strcasecmp
 #define strnicmp strncasecmp

@@ -12,33 +12,41 @@ extern "C" _CRTIMP extern FILE _iob[];
 extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #endif
 
+
+
+#ifndef __AMIGA__
+#include "xmp.h"
 #include <SDL.h>
 
 #if defined(WIN32)
 #undef main
 #endif
-
-#include "timer.h"
+#else
+#include "video.h"
+#include "Sound.h"
+#include "control.h"
+#endif
+#include "demoTimer.h"
 #include "star_bmp.h"
 #include "hex2surface.h"
 #include "font.h"
 #include "ball.h"
-#include "font-16x16-1520x16.h"
 #include "stars.h"
 #include "moddata.h"
-#ifndef __AMIGA__
-#include "xmp.h"
-#else
-#include "Sound.h"
-#endif
+//#include "font-16x16-1520x16.h"
 
 #ifdef __OSX__
 #include "CoreFoundation/CoreFoundation.h"
 #endif
 
 using namespace std;
-const static int WIDTH = 320;
-const static int HEIGHT = 200;
+#ifdef __AMIGA__
+#define WIDTH 320
+#define HEIGHT 200
+#else
+#define WIDTH 320
+#define HEIGHT 200
+#endif
 const static int SAMPLERATE = 44100;
 const static double SCROLLER_SPEED = 3.67;
 const static int SCROLLER_TEXT_HEIGHT = 16;
@@ -48,7 +56,7 @@ const static int SCROLLER_TEXT_LEN = sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEX
 const static int FRAMES_PER_SECOND = 60;
 const static int STAR_MAX = WIDTH / 15;
 const static int STAR_RND[] = {1, 2, 4, 6};
-static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
+//static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
 static SDL_Surface *screen;
 const static int ballrec =
 #ifdef __AMIGA__
@@ -159,7 +167,7 @@ static void star_randomize() {
 
 static int playing;
 
-static void fill_audio(void *udata, Uint8 *stream, int len) {
+static void fill_audio(void *udata, uint8_t *stream, int len) {
 #ifndef __AMIGA__
 	if (xmp_play_buffer((xmp_context) udata, stream, len, 0) < 0)
 		playing = 0;
@@ -195,16 +203,17 @@ static int init(
 		return -1;
 	}
 #endif
+
 	atexit(SDL_Quit);
+
 	return 0;
 }
 
 static void
-blit(SDL_Surface *image, SDL_Surface *screen, Sint16 srcX, Sint16 srcY, Sint16 dstX, Sint16 dstY, Uint16 width,
-	 Uint16 height) {
+blit(SDL_Surface *image, SDL_Surface *screen, int16_t srcX, int16_t srcY, int16_t dstX, int16_t dstY, uint16_t width,
+	 uint16_t height) {
 	SDL_Rect src = {srcX, srcY, width, height};
 	SDL_Rect dest = {dstX, dstY, width, height};
-
 	SDL_BlitSurface(image, &src, screen, &dest);
 }
 
@@ -212,10 +221,13 @@ static void DrawText(SDL_Surface *font, SDL_Surface *screen, int posX, int posY,
 	int i = 0;
 
 	for (const char &c : text) {
-		int fnt = c - 32;
+		int fnt = c - 65;
+		int offsetY = 0;
+		int letterX = fontW*fnt - (((fontW * fnt)/320)*320);
+		int letterY = (int((fontW * fnt)/320)*fontH);
 
-		if ((fontW * i) < WIDTH && (fontW * i) > -16) {
-			blit(font, screen, fontW * fnt, 0, (fontW * i) + posX, posY, fontW, fontH);
+		if ((fontW * i) < WIDTH && (fontW * i) > -fontW) {
+			blit(font, screen, letterX, letterY, (fontW * i) + posX, posY, fontW, fontH);
 		}
 
 		i++;
@@ -283,14 +295,11 @@ int main(int argc, const char *argv[])
 
 	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 8, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_HWPALETTE);
 
-	font2 = SDL_DisplayFormat(font2);
-	SDL_SetColorKey(font2, SDL_SRCCOLORKEY, SDL_MapRGB(font2->format, 255, 0, 255));
-
 	if (screen == nullptr) {
 		exit(0);
 	}
 
-	SDL_SetPalette(screen,SDL_LOGPAL|SDL_PHYSPAL, colors, 0, 256);
+	SDL_SetPalette(screen,SDL_LOGPAL|SDL_PHYSPAL, colors[0], 0, 256);
 
 	star_randomize();
 
@@ -298,21 +307,23 @@ int main(int argc, const char *argv[])
 	SDL_Surface *ball = Hex2Surface(hexball, 8, 8);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
 
+#ifndef __AMIGA__
 	font = SDL_DisplayFormat(font);
 	ball = SDL_DisplayFormat(ball);
 	stars = SDL_DisplayFormat(stars);
+#endif
+	SDL_SetColorKey(font, SDL_SRCCOLORKEY, 0);
+	SDL_SetColorKey(ball, SDL_SRCCOLORKEY, 0);
+	SDL_SetColorKey(stars, SDL_SRCCOLORKEY, 0);
 
-	SDL_SetColorKey(font, SDL_SRCCOLORKEY, SDL_MapRGB(font->format, 255, 0, 255));
-	SDL_SetColorKey(ball, SDL_SRCCOLORKEY, SDL_MapRGB(screen->format, 255, 0, 255));
-	SDL_SetColorKey(stars, SDL_SRCCOLORKEY, SDL_MapRGB(screen->format, 255, 0, 255));
-
+#ifndef __AMIGA
 	SDL_Event event;
-
+#endif
 	bool gameRunning = true;
 	double scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
-	int scnCnt = 0;
+	int scnCnt = 1;
 	const int sin_pos[] = {4, 4, 5, 6, 7, 8, 10, 12, 14, 16, 19, 22, 25, 28, 32, 36, 40, 44, 49, 54, 59, 65, 71, 77, 83,
 						   89, 94, 99, 104, 109, 113, 117, 121, 125, 128, 131, 134, 137, 139, 141, 143, 145, 146, 147,
 						   148, 149, 149, 149, 149, 148, 147, 146, 145, 143, 141, 139, 137, 134, 131, 128, 125, 121,
@@ -333,15 +344,15 @@ int main(int argc, const char *argv[])
 	SND_LoadModuleFromMemory(moddata, moddatalen);
 #endif
 
-	SDL_PauseAudio(1);
-
-	int fade = 255;
+	SDL_PauseAudio(0);
+	int fade = 255, i = 0;
 	SDL_Rect screenWH = {0, 0, WIDTH, HEIGHT};
 
 	while (gameRunning) {
+		int j = 0;
 		//Start the frame timer
 		fps.start();
-
+#ifndef __AMIGA
 		if (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) {
 				gameRunning = false;
@@ -365,10 +376,13 @@ int main(int argc, const char *argv[])
 				}
 			}
 		}
+#else
+		if (getKey() == 0x4000)
+			gameRunning = false;
 
-		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
-
-		int i = 0;
+#endif
+		SDL_FillRect(screen, NULL, 7);
+		//exit(0);
 		if (++sin_cnt >= sin_len) sin_cnt = 0;
 
 		DrawStars(stars, screen);
@@ -388,8 +402,8 @@ int main(int argc, const char *argv[])
 			}
 		} else {
 			SDL_Rect box = {0, SCROLLER_Y_TOP / 2, WIDTH, 1};
-			Uint32 color = SDL_MapRGB(screen->format, 0x7e, 0xd7, 0xe7);
-			Uint32 bgcolor = SDL_MapRGB(screen->format, 0, 0, 0);
+			uint32_t color = 1;//SDL_MapRGB(screen->format, 0x7e, 0xd7, 0xe7);
+			uint32_t bgcolor = 7;
 			SDL_FillRect(screen, &box, color);
 			box.y = SCROLLER_Y_TOP + (SCROLLER_Y_TOP / 2);
 			SDL_FillRect(screen, &box, color);
@@ -406,11 +420,11 @@ int main(int argc, const char *argv[])
 				int letterX = 16*fnt - (((16 * fnt)/320)*320);
 				int letterY = (int((16 * fnt)/320)*16);
 
-				if ((16 * i) - scr < WIDTH && (16 * i) - scr > -16) {
-					blit(font, screen, letterX, letterY, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
+				if ((16 * j) - scr < WIDTH && (16 * j) - scr > -16) {
+					blit(font, screen, letterX, letterY, (int) ((16 * j) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
 				}
 
-				i++;
+				j++;
 			}
 
 			DrawText(font, screen, (WIDTH / 2) - ((16 * 11) / 2), SCROLLER_Y_TOP + 32, 16, 16, "PRESS ENTER");
@@ -422,20 +436,18 @@ int main(int argc, const char *argv[])
 				int letterX = 16*fnt - (((16 * fnt)/320)*320);
 				int letterY = (int((16 * fnt)/320)*16);
 
-				offsetY = sin_cnt + i;
+				offsetY = sin_cnt + j;
 
 				if (offsetY >= sin_len)
 					offsetY -= sin_len;
 
 				offsetY = (sin_pos[offsetY] - (149 / 2))/2;
 
-				if ((16 * i) - scr < WIDTH && (16 * i) - scr > -16) {
-					//DrawText(font2, screen, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 16, 16, 16,
-					//		 SCROLLER_TEXT[textCnt]);
-					blit( font, screen, letterX, letterY, (int) ((16 * i) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
+				if ((16 * j) - scr < WIDTH && (16 * j) - scr > -16) {
+					blit( font, screen, letterX, letterY, (int) ((16 * j) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
 				}
 
-				i++;
+				j++;
 			}
 
 			scr = scr + SCROLLER_SPEED;
@@ -449,17 +461,19 @@ int main(int argc, const char *argv[])
 		} else if (scnCnt == 2) {
 			DrawBalls(ball, screen);
 		} else if (scnCnt == 3) {
-			DrawText(font2, screen, (WIDTH / 2) - ((16 * 7) / 2), SCROLLER_Y_TOP - 8, 16, 16, "LOADING");
+			DrawText(font, screen, (WIDTH / 2) - ((16 * 7) / 2), SCROLLER_Y_TOP - 8, 16, 16, "LOADING");
 		}
 
 		SDL_Flip(screen);
 		frame++;
 
-//#ifndef __AMIGA__
 		if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
+			if (frame %2 && scnCnt == 2) {
+				i++;
+				SDL_SetColors(screen, colors[i%2], 0, 256);
+			}
 			SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
 		}
-//#endif
 	}
 
 #ifndef __AMIGA__
@@ -468,12 +482,12 @@ int main(int argc, const char *argv[])
 	xmp_free_context(ctx);
 	SDL_CloseAudio();
 #else
-	SND_StopModule();
+	SND_EjectModule();
 #endif
-	SDL_FreeSurface(ball);
-	SDL_FreeSurface(stars);
-	SDL_FreeSurface(font);
-	SDL_FreeSurface(font2);
+//	SDL_FreeSurface(ball);
+//	SDL_FreeSurface(stars);
+//	SDL_FreeSurface(font);
+//	SDL_FreeSurface(font2);
 
 	SDL_Quit();
 

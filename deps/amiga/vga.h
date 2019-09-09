@@ -8,11 +8,15 @@
 
 #ifndef		VGA_H
 #define		VGA_H
-
+#ifdef __cplusplus
+#define PROTOHEADER extern "C"
+#else
+#define PROTOHEADER
+#endif
 
 // Set VGA-type palette
 void vga_setpalette(unsigned char *palette);
 void vga_set_color_correction(int gm, int br);
-void vga_vwait();
+PROTOHEADER void vga_wait();
 
 #endif

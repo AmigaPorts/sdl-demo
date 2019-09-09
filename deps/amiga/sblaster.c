@@ -18,7 +18,7 @@
 #include <proto/graphics.h>
 #include "amigaport.h"
 #include "sblaster.h"
-#include "soundmix.h"
+//#include "soundmix.h"
  
 #define USE_AHI_V4 TRUE
 

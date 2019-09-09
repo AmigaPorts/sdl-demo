@@ -1,2 +1,2 @@
-convert ../stars.png -define h:format=gray -depth 8 -size 320x48 ../stars.h && sed -e 's/MagickImage/hexstars/g' ../stars.h> ../src/demo/stars.h
+convert ../blankcanvas.png -define h:format=gray -depth 8 -size 320x48 ../canvas.h && sed -e 's/MagickImage/hexcanvas/g' ../canvas.h> ../src/assets/canvas.h
 xxd -i aurora.mod > src/demo/moddata.h
