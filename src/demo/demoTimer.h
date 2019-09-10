@@ -1,6 +1,8 @@
-class Timer
-{
-	private:
+#ifndef _DEMOTIMER_H
+#define _DEMOTIMER_H
+
+class Timer {
+private:
 	//The clock time when the timer started
 	int startTicks;
 
@@ -11,14 +13,17 @@ class Timer
 	bool paused;
 	bool started;
 
-	public:
+public:
 	//Initializes variables
 	Timer();
 
 	//The various clock actions
 	void start();
+
 	void stop();
+
 	void pause();
+
 	void unpause();
 
 	//Gets the timer's time
@@ -26,5 +31,8 @@ class Timer
 
 	//Checks the status of the timer
 	bool is_started();
+
 	bool is_paused();
 };
+
+#endif

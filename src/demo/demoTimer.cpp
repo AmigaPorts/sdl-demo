@@ -1,8 +1,7 @@
 #include <SDL.h>
-#include "timer.h"
+#include "demoTimer.h"
 
-Timer::Timer()
-{
+Timer::Timer() {
 	//Initialize the variables
 	startTicks = 0;
 	pausedTicks = 0;
@@ -10,8 +9,7 @@ Timer::Timer()
 	started = false;
 }
 
-void Timer::start()
-{
+void Timer::start() {
 	//Start the timer
 	started = true;
 
@@ -22,8 +20,7 @@ void Timer::start()
 	startTicks = SDL_GetTicks();
 }
 
-void Timer::stop()
-{
+void Timer::stop() {
 	//Stop the timer
 	started = false;
 
@@ -31,11 +28,9 @@ void Timer::stop()
 	paused = false;
 }
 
-void Timer::pause()
-{
+void Timer::pause() {
 	//If the timer is running and isn't already paused
-	if( ( started == true ) && ( paused == false ) )
-	{
+	if ((started == true) && (paused == false)) {
 		//Pause the timer
 		paused = true;
 
@@ -44,11 +39,9 @@ void Timer::pause()
 	}
 }
 
-void Timer::unpause()
-{
+void Timer::unpause() {
 	//If the timer is paused
-	if( paused == true )
-	{
+	if ( paused == true ) {
 		//Unpause the timer
 		paused = false;
 
@@ -60,19 +53,14 @@ void Timer::unpause()
 	}
 }
 
-int Timer::get_ticks()
-{
+int Timer::get_ticks() {
 	//If the timer is running
-	if( started == true )
-	{
+	if ( started == true ) {
 		//If the timer is paused
-		if( paused == true )
-		{
+		if ( paused == true ) {
 			//Return the number of ticks when the timer was paused
 			return pausedTicks;
-		}
-		else
-		{
+		} else {
 			//Return the current time minus the start time
 			return SDL_GetTicks() - startTicks;
 		}
@@ -82,12 +70,10 @@ int Timer::get_ticks()
 	return 0;
 }
 
-bool Timer::is_started()
-{
+bool Timer::is_started() {
 	return started;
 }
 
-bool Timer::is_paused()
-{
+bool Timer::is_paused() {
 	return paused;
 }

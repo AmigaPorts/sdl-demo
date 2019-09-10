@@ -1,9 +1,8 @@
-class StarBmp
-{
-	private:
+class StarBmp {
+private:
 
 
-	public:
+public:
 	//Initializes variables
 	StarBmp();
 
