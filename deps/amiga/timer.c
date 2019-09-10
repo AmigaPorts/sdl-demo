@@ -28,12 +28,13 @@ static int opentimer(ULONG unit) {
 static void closetimer(void) {
 	if ( TimerBase ) {
 		CloseDevice((APTR)timer_ioreq);
+
+		DeleteIORequest(timer_ioreq);
+		DeleteMsgPort(timer_msgport);
+		TimerBase = NULL;
+		timer_ioreq = 0;
+		timer_msgport = 0;
 	}
-	DeleteIORequest(timer_ioreq);
-	DeleteMsgPort(timer_msgport);
-	TimerBase = 0;
-	timer_ioreq = 0;
-	timer_msgport = 0;
 }
 
 static struct timeval startTime;

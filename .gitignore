@@ -45,3 +45,5 @@ x64/
 build*/
 cmake*/
 debug*/
+
+bin/

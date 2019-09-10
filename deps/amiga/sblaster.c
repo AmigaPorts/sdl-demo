@@ -158,7 +158,7 @@ int sound_thread(STRPTR args, ULONG length) {
 
 		}
 		signals = Wait(SIGBREAKF_CTRL_C | (1 << ahiPort->mp_SigBit));
-		if ( signals & SIGBREAKF_CTRL_C) {
+		if ( signals & SIGBREAKF_CTRL_C ) {
 			break;
 		}
 	}
@@ -205,7 +205,7 @@ int SB_playstart(int bits, int samplerate) {
 			NP_CloseOutput, FALSE,
 			NP_CloseInput, FALSE,
 			NP_StackSize, 20000,
-			NP_Entry, (ULONG)&sound_thread,
+			NP_Entry, (ULONG) & sound_thread,
 			TAG_DONE);
 
 

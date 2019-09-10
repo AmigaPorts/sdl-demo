@@ -24,7 +24,9 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #include "xmp.h"
 
 #else
+
 #include "Sound.h"
+
 #endif
 
 #include "demoTimer.h"
@@ -63,7 +65,7 @@ const static int ballrec =
 #ifdef __AMIGA__
 		230
 #else
-		230
+230
 #endif
 ;
 static int pxa1 = 0;
@@ -334,8 +336,6 @@ int main(int argc, const char *argv[])
 	};
 	const int sin_len = sizeof(sin_pos) / sizeof(sin_pos[0]);
 
-	char *tune = (char *)"aurora.mod";
-
 #ifndef __AMIGA__
 	if ( xmp_load_module_from_memory(ctx, (void *)moddata, moddatalen) < 0 ) {
 		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
@@ -349,7 +349,6 @@ int main(int argc, const char *argv[])
 
 	SDL_PauseAudio(1);
 	int fade = 255, i = 0;
-	SDL_Rect screenWH = { 0, 0, WIDTH, HEIGHT };
 
 	while ( gameRunning ) {
 		int j = 0;
@@ -380,12 +379,12 @@ int main(int argc, const char *argv[])
 			}
 		}
 #else
-		switch (getKey()) {
+		switch ( getKey()) {
 			case SDLK_ESCAPE:
 				gameRunning = false;
 				break;
 			case SDLK_RETURN:
-				if (scnCnt == 0) {
+				if ( scnCnt == 0 ) {
 					scnCnt = 1;
 					scr = -WIDTH;
 					SDL_PauseAudio(0);
@@ -398,7 +397,7 @@ int main(int argc, const char *argv[])
 		if ( ++sin_cnt >= sin_len ) sin_cnt = 0;
 
 		if ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38 ) {
-			blit(raveman, screen, 0, 0, 0, 0, 320, 200);
+			blit(raveman, screen, 0, 0, 0, 0, WIDTH, HEIGHT);
 			DrawStars(stars, screen);
 		} else if ((frame / FRAMES_PER_SECOND) > 37 ) {
 			scnCnt = 1;
@@ -498,7 +497,7 @@ int main(int argc, const char *argv[])
 			SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
 		}
 	}
-
+	fps.stop();
 #ifndef __AMIGA__
 	xmp_end_player(ctx);
 	xmp_release_module(ctx);
@@ -512,9 +511,6 @@ int main(int argc, const char *argv[])
 	SDL_FreeSurface(font);
 	SDL_FreeSurface(raveman);
 	SDL_FreeSurface(screen);
-
-
-	SDL_Quit();
 
 	exit(0);
 }

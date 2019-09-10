@@ -1,4 +1,12 @@
-# sdl-demo
+# SDL test demo
+
+## About
+
+This project was made to to test SDL on the different Amiga platforms, it has since evolved into something else
+and the purpose is now to test an alternative to SDL that removes the layer of SDL and talks directly with Amiga native
+components.
+
+## Building
 
 In order to compile this project for Amiga, you need to add this to your CMake toolchain file:
 ```

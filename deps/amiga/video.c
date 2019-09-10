@@ -62,7 +62,7 @@ extern void REGARGS c2p1x1_8_c5_bm(REG(d0, UWORD chunky_x), REG(d1, UWORD chunky
 extern UBYTE REGARGS mmu_mark(REG(a0, void *start), REG(d0, ULONG length), REG(d1, ULONG cm), REG(a6, struct ExecBase *SysBase));
 
 int colorKey = 0;
-static int isRTG = 0, mode = 0;
+static int isRTG = 0, mode = 0, isInitialized = 0;
 static ULONG colorsAGA[770];
 
 /** Hardware window */
@@ -280,9 +280,7 @@ int SDL_SetColors(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int n
 	return SDL_SetPalette(surface, 0, colors, firstcolor, ncolors);
 }
 
-int SDL_SetPalette(SDL_Surface *surface, int flags,
-				   SDL_Color *colors, int firstcolor,
-				   int ncolors) {
+int SDL_SetPalette(SDL_Surface *surface, int flags, SDL_Color *colors, int firstcolor, int ncolors) {
 	int i = 0;
 
 	if ( !firstcolor )
@@ -410,6 +408,7 @@ int SDL_ShowCursor(int toggle) {
 }
 
 int SDL_Init(uint32_t flags) {
+	isInitialized = 1;
 	initTimer();
 	initControls();
 	return (0);
@@ -421,33 +420,36 @@ void SDL_FreeSurface(SDL_Surface *surface) {
 }
 
 void SDL_Quit(void) {
+	if (isInitialized) {
+		destroyTimer();
+		destroyControls();
 
-	destroyTimer();
-	destroyControls();
+		if ( _hardwareWindow ) {
+			ClearPointer(_hardwareWindow);
+			CloseWindow(_hardwareWindow);
+			_hardwareWindow = NULL;
+		}
 
-	if ( _hardwareWindow ) {
-		ClearPointer(_hardwareWindow);
-		CloseWindow(_hardwareWindow);
-		_hardwareWindow = NULL;
-	}
+		if ( _hardwareScreenBuffer[0] ) {
+			WaitBlit();
+			FreeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[0]);
+			_hardwareScreenBuffer[0] = NULL;
+		}
 
-	if ( _hardwareScreenBuffer[0] ) {
-		WaitBlit();
-		FreeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[0]);
-	}
+		if ( _hardwareScreenBuffer[1] ) {
+			WaitBlit();
+			FreeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[1]);
+			_hardwareScreenBuffer[0] = NULL;
+		}
 
-	if ( _hardwareScreenBuffer[1] ) {
-		WaitBlit();
-		FreeScreenBuffer(_hardwareScreen, _hardwareScreenBuffer[1]);
-	}
+		if ( _hardwareScreen ) {
+			CloseScreen(_hardwareScreen);
+			_hardwareScreen = NULL;
+		}
 
-	if ( _hardwareScreen ) {
-		CloseScreen(_hardwareScreen);
-		_hardwareScreen = NULL;
-	}
-
-	if ( CyberGfxBase ) {
-		CloseLibrary(CyberGfxBase);
-		CyberGfxBase = NULL;
+		if ( CyberGfxBase ) {
+			CloseLibrary(CyberGfxBase);
+			CyberGfxBase = NULL;
+		}
 	}
 }
