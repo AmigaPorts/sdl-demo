@@ -11,5 +11,5 @@
 PROTOHEADER uint32_t SDL_GetTicks();
 PROTOHEADER void sleep(int ms);
 PROTOHEADER void initTimer(void);
-PROTOHEADER void exitTimer(void);
+PROTOHEADER void destroyTimer(void);
 #endif //_TIMER_H

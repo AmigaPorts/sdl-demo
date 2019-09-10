@@ -40,6 +40,7 @@
 
 #define PLOG(fmt, args...) do {   fprintf(stdout, fmt, ## args); } while (0)
 
+extern void REGARGS c2p1x1_8_c5_bm_040(REG(d0, UWORD chunky_x),REG(d1, UWORD chunky_y),REG(d2, UWORD offset_x),REG(d3, UWORD offset_y),REG(a0, UBYTE *chunky_buffer),REG(a1, struct BitMap *bitmap));
 extern void REGARGS c2p1x1_8_c5_bm(REG(d0, UWORD chunky_x),REG(d1, UWORD chunky_y),REG(d2, UWORD offset_x),REG(d3, UWORD offset_y),REG(a0, UBYTE *chunky_buffer),REG(a1, struct BitMap *bitmap));
 
 /*
@@ -169,8 +170,8 @@ void start_aga(int width, int height, int bpp)
                      TAG_END);
 
     // Create the hardware screen.
-    _hardwareScreenBuffer[0] = (struct ScreenBuffer *) AllocScreenBuffer(_hardwareScreen, NULL, SB_SCREEN_BITMAP);
-    _hardwareScreenBuffer[1] = (struct ScreenBuffer *) AllocScreenBuffer(_hardwareScreen, NULL, 0);
+    _hardwareScreenBuffer[0] = AllocScreenBuffer(_hardwareScreen, NULL, SB_SCREEN_BITMAP);
+    _hardwareScreenBuffer[1] = AllocScreenBuffer(_hardwareScreen, NULL, 0);
     
     _currentScreenBuffer = 1;
     
@@ -301,7 +302,7 @@ int SDL_SetPalette(SDL_Surface *surface, int flags,
      
     //if(bpp>1) return 0;
 
-    for (i=firstcolor; i<256; ++i)
+    for (i=firstcolor; i<ncolors; ++i)
     {
         colorsAGA[j]   = colors[i].r << 24;
         colorsAGA[j+1] = colors[i].g << 24;
@@ -328,7 +329,7 @@ int SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 
 	if (dstrect == NULL)
 	{
-		dstrect = AllocVec(sizeof(dstrect), MEMF_FAST);
+		dstrect = AllocVec(sizeof(SDL_Rect), MEMF_FAST);
 		dstrect->w = dst->w;
 		dstrect->h = dst->h;
 		dstrect->x = 0;
@@ -344,7 +345,7 @@ int SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 
 		row += dst->w;
 	}
-
+	//FreeVec(dstrect);
 	return(0);
 }
 
@@ -388,7 +389,8 @@ int SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_R
 		row += dst->w;
 		srcrow += src->w;
 	}
-
+	//FreeVec(dstrect);
+	//FreeVec(srcrect);
 	return(0);
 }
 
@@ -399,7 +401,7 @@ SDL_Surface * SDL_CreateRGBSurface(uint32_t flags, int width, int height, int de
 
 SDL_Surface * SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, uint32_t Rmask, uint32_t Gmask, uint32_t Bmask, uint32_t Amask) {
 	SDL_Surface *surface;
-	surface = (SDL_Surface *)AllocVec(sizeof(*surface), MEMF_FAST);
+	surface = (SDL_Surface *)AllocVec(sizeof(SDL_Surface), MEMF_FAST);
 	surface->w = width;
 	surface->h = height;
 	surface->pixels = pixels;
@@ -421,7 +423,15 @@ int SDL_Init(uint32_t flags) {
 	return(0);
 }
 
+void SDL_FreeSurface(SDL_Surface *surface) {
+	if (surface)
+		FreeVec(surface);
+}
+
 void SDL_Quit(void) {
+
+	destroyTimer();
+	destroyControls();
 
 	if (_hardwareWindow) {
 		ClearPointer(_hardwareWindow);
@@ -449,7 +459,4 @@ void SDL_Quit(void) {
 		CloseLibrary(CyberGfxBase);
 		CyberGfxBase = NULL;
 	}
-
-	exitTimer();
-	destroyControls();
 }

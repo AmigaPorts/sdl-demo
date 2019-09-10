@@ -18,8 +18,43 @@
 PROTOHEADER int quit_game;
 PROTOHEADER unsigned long getKey(void);
 
-#define KEY_RETURN (0x44)
+#define SDLK_ESCAPE (0x45)
+#define SDLK_RETURN (0x44)
 #define KEY_F10    (0x59)
+
+typedef enum {
+	SDL_NOEVENT = 0,			/**< Unused (do not remove) */
+	SDL_ACTIVEEVENT,			/**< Application loses/gains visibility */
+	SDL_KEYDOWN,			/**< Keys pressed */
+	SDL_KEYUP,			/**< Keys released */
+	SDL_MOUSEMOTION,			/**< Mouse moved */
+	SDL_MOUSEBUTTONDOWN,		/**< Mouse button pressed */
+	SDL_MOUSEBUTTONUP,		/**< Mouse button released */
+	SDL_JOYAXISMOTION,		/**< Joystick axis motion */
+	SDL_JOYBALLMOTION,		/**< Joystick trackball motion */
+	SDL_JOYHATMOTION,		/**< Joystick hat position change */
+	SDL_JOYBUTTONDOWN,		/**< Joystick button pressed */
+	SDL_JOYBUTTONUP,			/**< Joystick button released */
+	SDL_QUIT,			/**< User-requested quit */
+	SDL_SYSWMEVENT,			/**< System specific event */
+	SDL_EVENT_RESERVEDA,		/**< Reserved for future use.. */
+	SDL_EVENT_RESERVEDB,		/**< Reserved for future use.. */
+	SDL_VIDEORESIZE,			/**< User resized video mode */
+	SDL_VIDEOEXPOSE,			/**< Screen needs to be redrawn */
+	SDL_EVENT_RESERVED2,		/**< Reserved for future use.. */
+	SDL_EVENT_RESERVED3,		/**< Reserved for future use.. */
+	SDL_EVENT_RESERVED4,		/**< Reserved for future use.. */
+	SDL_EVENT_RESERVED5,		/**< Reserved for future use.. */
+	SDL_EVENT_RESERVED6,		/**< Reserved for future use.. */
+	SDL_EVENT_RESERVED7,		/**< Reserved for future use.. */
+	/** Events SDL_USEREVENT through SDL_MAXEVENTS-1 are for your use */
+			SDL_USEREVENT = 24,
+	/** This last event is only for bounding internal arrays
+ *  It is the number of bits in the event mask datatype -- Uint32
+	 */
+			SDL_NUMEVENTS = 32
+} SDL_EventType;
+
 /* Port types */
 #define JP_TYPE_NOTAVAIL  (00<<28)	  /* port data unavailable    */
 #define JP_TYPE_GAMECTLR  (01<<28)	  /* port has game controller */

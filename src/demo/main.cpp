@@ -33,6 +33,7 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #include "ball.h"
 #include "stars.h"
 #include "moddata.h"
+#include "raveman.h"
 //#include "font-16x16-1520x16.h"
 
 #ifdef __OSX__
@@ -53,7 +54,7 @@ const static int SCROLLER_TEXT_HEIGHT = 16;
 const static int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
 const static string SCROLLER_TEXT[] = {"EEVULNET", "FOREVER LOVING THE AMIGA"};
 const static int SCROLLER_TEXT_LEN = sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEXT[0]);
-const static int FRAMES_PER_SECOND = 60;
+const static int FRAMES_PER_SECOND = 50;
 const static int STAR_MAX = WIDTH / 15;
 const static int STAR_RND[] = {1, 2, 4, 6};
 //static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
@@ -306,15 +307,18 @@ int main(int argc, const char *argv[])
 	SDL_Surface *font = Hex2Surface(hexfont, 320, 48);
 	SDL_Surface *ball = Hex2Surface(hexball, 8, 8);
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
+	SDL_Surface *raveman = Hex2Surface(hexraveman, 320, 200);
 
 #ifndef __AMIGA__
 	font = SDL_DisplayFormat(font);
 	ball = SDL_DisplayFormat(ball);
 	stars = SDL_DisplayFormat(stars);
+	raveman = SDL_DisplayFormat(raveman);
 #endif
 	SDL_SetColorKey(font, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(ball, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(stars, SDL_SRCCOLORKEY, 0);
+	SDL_SetColorKey(raveman, SDL_SRCCOLORKEY, 0);
 
 #ifndef __AMIGA
 	SDL_Event event;
@@ -323,7 +327,7 @@ int main(int argc, const char *argv[])
 	double scr = -WIDTH;
 	int sin_cnt = 0;
 	int textCnt = 0;
-	int scnCnt = 1;
+	int scnCnt = 0;
 	const int sin_pos[] = {4, 4, 5, 6, 7, 8, 10, 12, 14, 16, 19, 22, 25, 28, 32, 36, 40, 44, 49, 54, 59, 65, 71, 77, 83,
 						   89, 94, 99, 104, 109, 113, 117, 121, 125, 128, 131, 134, 137, 139, 141, 143, 145, 146, 147,
 						   148, 149, 149, 149, 149, 148, 147, 146, 145, 143, 141, 139, 137, 134, 131, 128, 125, 121,
@@ -344,7 +348,7 @@ int main(int argc, const char *argv[])
 	SND_LoadModuleFromMemory(moddata, moddatalen);
 #endif
 
-	SDL_PauseAudio(0);
+	SDL_PauseAudio(1);
 	int fade = 255, i = 0;
 	SDL_Rect screenWH = {0, 0, WIDTH, HEIGHT};
 
@@ -377,17 +381,31 @@ int main(int argc, const char *argv[])
 			}
 		}
 #else
-		if (getKey() == 0x4000)
-			gameRunning = false;
-
+		switch (getKey()) {
+			case SDLK_ESCAPE:
+				gameRunning = false;
+				break;
+			case SDLK_RETURN:
+				if (scnCnt == 0) {
+					scnCnt = 1;
+					scr = -WIDTH;
+					SDL_PauseAudio(0);
+				}
+				break;
+			default:
+				break;
+		}
 #endif
-		SDL_FillRect(screen, NULL, 7);
-		//exit(0);
 		if (++sin_cnt >= sin_len) sin_cnt = 0;
 
-		DrawStars(stars, screen);
-		if ((frame / 60) > 18 && (frame / 60) < 28) {
-//			scnCnt = 3;
+		if ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38) {
+			blit(raveman, screen, 0, 0, 0, 0, 320, 200);
+			DrawStars(stars, screen);
+		} else if ((frame / FRAMES_PER_SECOND) > 37) {
+			scnCnt = 1;
+			frame = 0;
+		} else if ((frame / FRAMES_PER_SECOND) > 18 && (frame / FRAMES_PER_SECOND) < 28) {
+
 			if (fade < 1) {
 				fade = 0;
 
@@ -401,8 +419,11 @@ int main(int argc, const char *argv[])
 				SDL_FillRect(screen, &box, (int)ceil(rand() / 254)+1);
 			}
 		} else {
+			SDL_FillRect(screen, NULL, 7);
+			DrawStars(stars, screen);
+
 			SDL_Rect box = {0, SCROLLER_Y_TOP / 2, WIDTH, 1};
-			uint32_t color = 1;//SDL_MapRGB(screen->format, 0x7e, 0xd7, 0xe7);
+			uint32_t color = 2;//SDL_MapRGB(screen->format, 0x7e, 0xd7, 0xe7);
 			uint32_t bgcolor = 7;
 			SDL_FillRect(screen, &box, color);
 			box.y = SCROLLER_Y_TOP + (SCROLLER_Y_TOP / 2);
@@ -464,14 +485,17 @@ int main(int argc, const char *argv[])
 			DrawText(font, screen, (WIDTH / 2) - ((16 * 7) / 2), SCROLLER_Y_TOP - 8, 16, 16, "LOADING");
 		}
 
+		if ((frame/FRAMES_PER_SECOND) %2 && scnCnt == 2 && ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38)) {
+			i++;
+			SDL_SetColors(screen, colors[i%2], 0, 256);
+		}
+
 		SDL_Flip(screen);
-		frame++;
+		if (scnCnt > 0)
+			frame++;
 
 		if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
-			if (frame %2 && scnCnt == 2) {
-				i++;
-				SDL_SetColors(screen, colors[i%2], 0, 256);
-			}
+
 			SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
 		}
 	}
@@ -484,12 +508,14 @@ int main(int argc, const char *argv[])
 #else
 	SND_EjectModule();
 #endif
-//	SDL_FreeSurface(ball);
-//	SDL_FreeSurface(stars);
-//	SDL_FreeSurface(font);
-//	SDL_FreeSurface(font2);
+	SDL_FreeSurface(ball);
+	SDL_FreeSurface(stars);
+	SDL_FreeSurface(font);
+	SDL_FreeSurface(raveman);
+	SDL_FreeSurface(screen);
+
 
 	SDL_Quit();
 
-	return 0;
+	exit(0);
 }

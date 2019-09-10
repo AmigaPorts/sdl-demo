@@ -142,11 +142,9 @@ unsigned long getKey()
     		if(Code & 0x80)
     		{
     			switch(Code & 0x7f)
-    			{    
-    				case KEY_RETURN:		ret =  0x4000;
-    				    break;  
-                    case KEY_F10:
-                        quit_game = 1;
+    			{
+					default:
+                        ret = Code & 0x7f;
                         break;      			     				 
     			}
     		} else

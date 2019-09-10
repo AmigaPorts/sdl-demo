@@ -41,6 +41,7 @@ if(AMIGAOS3)
 
 	set(AMIGA_SOURCES
 			deps/amiga/c2p1x1_8_c5_bm.s
+			deps/amiga/c2p1x1_8_c5_bm_040.s
 			deps/amiga/amiga_timer.c
 			deps/amiga/control.c
 			deps/amiga/video.c

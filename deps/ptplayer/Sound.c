@@ -87,7 +87,6 @@ unsigned char *SND_LoadModule( char *path )
 
 unsigned char* SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen)
 {
-	//unsigned char *buf = NULL;
 	if (SND_curmod = AllocVec( moddatalen, MEMF_CHIP )) {
 		memcpy(SND_curmod, moddata, moddatalen);
 		return SND_curmod;

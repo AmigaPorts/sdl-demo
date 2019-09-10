@@ -70,7 +70,7 @@ int getTimeMS(void)
 // Sleep for a specified number of ms
 
 
-void exitTimer() {
+void destroyTimer() {
     closetimer();
 }
 

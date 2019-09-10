@@ -19,10 +19,10 @@
 typedef struct SDL_Surface {
 //	Uint32 flags;				/**< Read-only */
 //	SDL_PixelFormat *format;		/**< Read-only */
-	int w, h;				/**< Read-only */
+	int w, h;                /**< Read-only */
 //	Uint16 pitch;				/**< Read-only */
-	void *pixels;				/**< Read-write */
-	int offset;				/**< Private */
+	void *pixels;                /**< Read-write */
+	int offset;                /**< Private */
 
 	/** Hardware-specific surface info */
 //	struct private_hwdata *hwdata;
@@ -41,7 +41,7 @@ typedef struct SDL_Surface {
 //	unsigned int format_version;		/**< Private */
 
 	/** Reference count -- used when freeing surface */
-//	int refcount;				/**< Read-mostly */
+//	int refcount;				/**< Read-mostly */} SDL_Surface;
 } SDL_Surface;
 
 typedef struct SDL_Color {
@@ -105,15 +105,15 @@ PROTOHEADER void SDL_Quit(void);
 #define SDL_NOFRAME	0x00000020	/**< No window caption or edge frame */
 /*@}*/
 
+PROTOHEADER void SDL_FreeSurface(SDL_Surface *surface);
+
 PROTOHEADER int SDL_SetColorKey(SDL_Surface *surface, uint32_t flag, uint32_t key);
 
 PROTOHEADER int SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
 
 PROTOHEADER int SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color);
 
-PROTOHEADER int SDL_SetPalette(SDL_Surface *surface, int flags,
-				   SDL_Color *colors, int firstcolor,
-				   int ncolors);
+PROTOHEADER int SDL_SetPalette(SDL_Surface *surface, int flags, SDL_Color *colors, int firstcolor, int ncolors);
 
 PROTOHEADER SDL_Surface * SDL_SetVideoMode(int width, int height, int bpp, uint32_t flags);
 
