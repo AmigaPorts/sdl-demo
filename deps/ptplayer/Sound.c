@@ -23,7 +23,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 
-#ifdef TESTSOUND 
+#ifdef TESTSOUND
 int main( int argc, char **argv )
 {
 	char *modname = "data/mod.194x";
@@ -41,7 +41,7 @@ int main( int argc, char **argv )
 	}
 	else
 		printf("cannot load module %s\n",modname);
-	
+
 
 	return 0;
 }
@@ -56,38 +56,33 @@ unsigned char SND_playing = 0;
 
 /* multiple modules could be loaded - but on the other hand chipmem is scarce */
 /* loadmodule won't start playing (yet) */
-unsigned char *SND_LoadModule( char *path )
-{
+unsigned char *SND_LoadModule(char *path) {
 	unsigned char *buf = NULL;
 	FILE *ifile;
 
-	ifile = fopen( path, "rb" );
-	if( ifile )
-	{
-	 int src_size;
+	ifile = fopen(path, "rb");
+	if ( ifile ) {
+		int src_size;
 
-	 fseek(ifile,0,SEEK_END);
-	 src_size=ftell(ifile);
-	 rewind(ifile);
+		fseek(ifile, 0, SEEK_END);
+		src_size = ftell(ifile);
+		rewind(ifile);
 
-	 /* sanity check: max. 2 MB (right now) */
-	 if( (src_size > 0) && (src_size < MAX_MODSIZE) )
-	 {
-	  if( (buf = AllocVec( src_size, MEMF_CHIP ) ) )
-	  {
-		fread(buf, 1, src_size, ifile );
-	  }
-	 }
+		/* sanity check: max. 2 MB (right now) */
+		if ((src_size > 0) && (src_size < MAX_MODSIZE)) {
+			if ((buf = AllocVec(src_size, MEMF_CHIP))) {
+				fread(buf, 1, src_size, ifile);
+			}
+		}
 
-	 fclose( ifile );
+		fclose(ifile);
 	}
-	
+
 	return buf;
 }
 
-unsigned char* SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen)
-{
-	if (SND_curmod = AllocVec( moddatalen, MEMF_CHIP )) {
+unsigned char *SND_LoadModuleFromMemory(unsigned char *moddata, int moddatalen) {
+	if ( SND_curmod = AllocVec(moddatalen, MEMF_CHIP)) {
 		memcpy(SND_curmod, moddata, moddatalen);
 		return SND_curmod;
 	} else {
@@ -99,12 +94,10 @@ unsigned char* SND_LoadModuleFromMemory( unsigned char* moddata, int moddatalen)
 /*
   stop playing and discard module
 */
-int SND_EjectModule( void )
-{
-	if( SND_curmod )
-	{
+int SND_EjectModule(void) {
+	if ( SND_curmod ) {
 		SND_StopModule();
-		FreeVec( SND_curmod );
+		FreeVec(SND_curmod);
 	}
 }
 
@@ -113,45 +106,35 @@ int SND_EjectModule( void )
 
   if buf is empty, previous module will be played (if present)
 */
-PROTOHEADER int SND_PlayModule( unsigned char *buf )
-{
-	if( !buf )
+PROTOHEADER int SND_PlayModule(unsigned char *buf) {
+	if ( !buf )
 		buf = SND_curmod;
 
-	if( buf )
-	{
-		if( SND_playing )
+	if ( buf ) {
+		if ( SND_playing )
 			PT_StopPlay();
 
 		SND_curmod = buf;
-		PT_StartPlay( buf );
+		PT_StartPlay(buf);
 		SND_playing = 1;
 
 		return 1;
-	}
-	else
-		return	0;
+	} else
+		return 0;
 }
 
-void SDL_PauseAudio( int pause_on )
-{
-	if( SND_curmod )
-	{
-		if( pause_on == 1 )
-		{
-			if( SND_playing == 1) {
+void SDL_PauseAudio(int pause_on) {
+	if ( SND_curmod ) {
+		if ( pause_on == 1 ) {
+			if ( SND_playing == 1 ) {
 				PT_StopPlay();
 				SND_playing = 0;
 			}
-		}
-		else
-		{
-			PT_StartPlay( SND_curmod );
+		} else {
+			PT_StartPlay(SND_curmod);
 			SND_playing = 1;
 		}
-	}
-	else
-	{
+	} else {
 		//printf("failed to load song from mem");
 	}
 }
@@ -159,21 +142,18 @@ void SDL_PauseAudio( int pause_on )
 /*
   stop playing but keep module in memory
 */
-PROTOHEADER int SND_StopModule( void )
-{
-	if( SND_playing )
+PROTOHEADER int SND_StopModule(void) {
+	if ( SND_playing )
 		PT_StopPlay();
 	SND_playing = 0;
 	return 0;
 }
 
-PROTOHEADER void SND_SetFXChannel( unsigned int channel )
-{
-	PT_SetFXChannel( channel );
+PROTOHEADER void SND_SetFXChannel(unsigned int channel) {
+	PT_SetFXChannel(channel);
 }
 
-PROTOHEADER void SND_SetFX( unsigned int fx )
-{
-	PT_SetFX( fx );
+PROTOHEADER void SND_SetFX(unsigned int fx) {
+	PT_SetFX(fx);
 }
 

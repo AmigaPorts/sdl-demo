@@ -1,7 +1,6 @@
 #include "star_bmp.h"
 
-StarBmp::StarBmp()
-{
+StarBmp::StarBmp() {
 	//Initialize the variables
 	x = 0;
 	y = 0;

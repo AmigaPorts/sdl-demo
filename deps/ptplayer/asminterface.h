@@ -6,9 +6,9 @@
   Interface macros for ASM subroutines for GCC and SAS/C
 
   syntax:
-   ASM SAVEDS int some_asm_subroutine(   
+   ASM SAVEDS int some_asm_subroutine(
                          ASMR(d3) unsigned int   some_data    ASMREG(d3),
-                         ASMR(a0) unsigned char *some_address ASMREG(a0) 
+                         ASMR(a0) unsigned char *some_address ASMREG(a0)
 			             );
 
   Reason for the double spec of An/Dn: some compilers (SAS) require the register
@@ -22,15 +22,15 @@
 #ifdef __SASC
 
 #define ASM __asm
-#define ASMR(x) register __ ## x 
-#define ASMREG(x) 
+#define ASMR(x) register __ ## x
+#define ASMREG(x)
 #define SAVEDS __saveds
 
 #else /* __SASC */
 
 #ifdef __GNUC__
 
-#define ASM 
+#define ASM
 #define ASMR(x) register
 #define ASMREG(x) __asm("" #x "")
 #define SAVEDS __saveds

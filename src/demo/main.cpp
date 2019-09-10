@@ -13,19 +13,20 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #endif
 
 
-
-#ifndef __AMIGA__
-#include "xmp.h"
 #include <SDL.h>
 
 #if defined(WIN32)
 #undef main
 #endif
+
+#ifndef __AMIGA__
+
+#include "xmp.h"
+
 #else
-#include "video.h"
 #include "Sound.h"
-#include "control.h"
 #endif
+
 #include "demoTimer.h"
 #include "star_bmp.h"
 #include "hex2surface.h"
@@ -52,12 +53,11 @@ const static int SAMPLERATE = 44100;
 const static double SCROLLER_SPEED = 3.67;
 const static int SCROLLER_TEXT_HEIGHT = 16;
 const static int SCROLLER_Y_TOP = (HEIGHT / 2) - (SCROLLER_TEXT_HEIGHT / 2);
-const static string SCROLLER_TEXT[] = {"EEVULNET", "FOREVER LOVING THE AMIGA"};
+const static string SCROLLER_TEXT[] = { "EEVULNET", "FOREVER LOVING THE AMIGA" };
 const static int SCROLLER_TEXT_LEN = sizeof(SCROLLER_TEXT) / sizeof(SCROLLER_TEXT[0]);
 const static int FRAMES_PER_SECOND = 50;
 const static int STAR_MAX = WIDTH / 15;
-const static int STAR_RND[] = {1, 2, 4, 6};
-//static SDL_Surface *font2 = Hex2Surface(font16x16, 1520, 16);
+const static int STAR_RND[] = { 1, 2, 4, 6 };
 static SDL_Surface *screen;
 const static int ballrec =
 #ifdef __AMIGA__
@@ -71,7 +71,7 @@ static int pxa2 = 0;
 static int pya1 = 0;
 static int pya2 = 0;
 
-const static int PILEN = (int) (360 * 2);
+const static int PILEN = (int)(360 * 2);
 
 const static int RX1 = ((WIDTH - 16) / 4); //76
 const static int RX2 = ((WIDTH - 16) / 4); //76
@@ -93,16 +93,16 @@ Timer fps;
 #endif
 
 static inline int mod(int v, int m) {
-	while (v < 0) v += m;
+	while ( v < 0 ) v += m;
 
 	return v % m;
 }
 
 static void star_randomize() {
-	for (int i = 0; i < PILEN; i++) {
+	for ( int i = 0; i < PILEN; i++ ) {
 		double a = (i * 2 * M_PI) * (1.00f / PILEN);
-		cosTab[i] = (long) (16383 * cos(a));
-		sinTab[i] = (long) (16383 * sin(a));
+		cosTab[i] = (long)(16383 * cos(a));
+		sinTab[i] = (long)(16383 * sin(a));
 	}
 
 	int pxb1 = pxa1;
@@ -110,13 +110,13 @@ static void star_randomize() {
 	int pyb1 = pya1;
 	int pyb2 = pya2;
 
-	for (int i = 0; i < PILEN; i++) {
+	for ( int i = 0; i < PILEN; i++ ) {
 		pxb1 = pxa1;
 		pxb2 = pxa2;
 		pyb1 = pya1;
 		pyb2 = pya2;
 
-		for (int j = 0; j < ballrec; j++) {
+		for ( int j = 0; j < ballrec; j++ ) {
 			int x = (((RX1 * cosTab[mod(pxb1, PILEN)]) + (RX2 * sinTab[mod(pxb2, PILEN)])) >> 15) + (WIDTH - 8) / 2;
 			int y = ((RY1 * cosTab[mod(pyb1, PILEN)] + RY2 * sinTab[mod(pyb2, PILEN)]) >> 15) + (HEIGHT - 8) / 2;
 
@@ -135,32 +135,32 @@ static void star_randomize() {
 
 	}
 
-	for (auto &i : STAR_BMP) {
+	for ( auto &i : STAR_BMP ) {
 		StarBmp val;
 
-		val.x = (int) floor(rand() % WIDTH);
-		val.y = (int) floor(rand() % rand() % (SCROLLER_Y_TOP / 2));
-		int rnd = (int) floor(rand() % 4);
+		val.x = (int)floor(rand() % WIDTH);
+		val.y = (int)floor(rand() % rand() % (SCROLLER_Y_TOP / 2));
+		int rnd = (int)floor(rand() % 4);
 
 		val.spd = STAR_RND[rnd];
 
-		if (val.y > 100) {
+		if ( val.y > 100 ) {
 			val.spd > 1 ? (val.spd -= 1) : (val.y -= 100);
 		}
 
-		if (val.y > 150) {
+		if ( val.y > 150 ) {
 			val.spd > 1 ? (val.spd -= 1) : (val.y -= 150);
 		}
 
-		if (val.y > 200) {
+		if ( val.y > 200 ) {
 			val.spd > 1 ? (val.spd -= 1) : (val.y -= 200);
 		}
 
-		if (val.y > 250) {
+		if ( val.y > 250 ) {
 			val.spd > 1 ? (val.spd -= 1) : (val.y -= 250);
 		}
 
-		val.bmp = 5 * (int) floor(rand() % 11);
+		val.bmp = 5 * (int)floor(rand() % 11);
 
 		i = val;
 	}
@@ -170,7 +170,7 @@ static int playing;
 
 static void fill_audio(void *udata, uint8_t *stream, int len) {
 #ifndef __AMIGA__
-	if (xmp_play_buffer((xmp_context) udata, stream, len, 0) < 0)
+	if ( xmp_play_buffer((xmp_context)udata, stream, len, 0) < 0 )
 		playing = 0;
 #endif
 }
@@ -180,14 +180,14 @@ static int init(
 		xmp_context ctx
 #endif
 ) {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
+	if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0 ) {
 		fprintf(stderr, "Unable to initialize SDL:%s\n", SDL_GetError());
 		return -1;
 	}
 #ifndef __AMIGA__
 	SDL_AudioSpec a;
 
-	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+	if ( SDL_Init(SDL_INIT_AUDIO) < 0 ) {
 		fprintf(stderr, "SDL: can't initialize: %s\n", SDL_GetError());
 		return -1;
 	}
@@ -199,7 +199,7 @@ static int init(
 	a.callback = fill_audio;
 	a.userdata = ctx;
 
-	if (SDL_OpenAudio(&a, NULL) < 0) {
+	if ( SDL_OpenAudio(&a, NULL) < 0 ) {
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
@@ -211,23 +211,21 @@ static int init(
 }
 
 static void
-blit(SDL_Surface *image, SDL_Surface *screen, int16_t srcX, int16_t srcY, int16_t dstX, int16_t dstY, uint16_t width,
-	 uint16_t height) {
-	SDL_Rect src = {srcX, srcY, width, height};
-	SDL_Rect dest = {dstX, dstY, width, height};
+blit(SDL_Surface *image, SDL_Surface *screen, int16_t srcX, int16_t srcY, int16_t dstX, int16_t dstY, uint16_t width, uint16_t height) {
+	SDL_Rect src = { srcX, srcY, width, height };
+	SDL_Rect dest = { dstX, dstY, width, height };
 	SDL_BlitSurface(image, &src, screen, &dest);
 }
 
 static void DrawText(SDL_Surface *font, SDL_Surface *screen, int posX, int posY, int fontW, int fontH, string text) {
 	int i = 0;
 
-	for (const char &c : text) {
+	for ( const char &c : text ) {
 		int fnt = c - 65;
-		int offsetY = 0;
-		int letterX = fontW*fnt - (((fontW * fnt)/320)*320);
-		int letterY = (int((fontW * fnt)/320)*fontH);
+		int letterX = fontW * fnt - (((fontW * fnt) / 320) * 320);
+		int letterY = (int((fontW * fnt) / 320) * fontH);
 
-		if ((fontW * i) < WIDTH && (fontW * i) > -fontW) {
+		if ((fontW * i) < WIDTH && (fontW * i) > -fontW ) {
 			blit(font, screen, letterX, letterY, (fontW * i) + posX, posY, fontW, fontH);
 		}
 
@@ -236,24 +234,24 @@ static void DrawText(SDL_Surface *font, SDL_Surface *screen, int posX, int posY,
 }
 
 static void DrawStars(SDL_Surface *stars, SDL_Surface *screen) {
-	for (auto &i : STAR_BMP) {
+	for ( auto &i : STAR_BMP ) {
 		int len = i.x + i.spd;
-		if (len >= WIDTH) len = 0;
+		if ( len >= WIDTH ) len = 0;
 		i.x = len;
 
 		blit(stars, screen, i.bmp, 0, len, i.y, 5, 5);
-		blit(stars, screen, i.bmp, 0, len, i.y + (int) (SCROLLER_Y_TOP * 1.5), 5, 5);
+		blit(stars, screen, i.bmp, 0, len, i.y + (int)(SCROLLER_Y_TOP * 1.5), 5, 5);
 	}
 }
 
 static void DrawBalls(SDL_Surface *ball, SDL_Surface *screen) {
 
-	for (int i = 0; i < ballrec; i++) {
+	for ( int i = 0; i < ballrec; i++ ) {
 		blit(ball, screen, 0, 0, ballX[ballCounter][i], ballY[ballCounter][i], 8, 8);
 	}
 	ballCounter++;
 
-	if (ballCounter == PILEN)
+	if ( ballCounter == PILEN )
 		ballCounter = 0;
 
 }
@@ -283,11 +281,11 @@ int main(int argc, const char *argv[])
 	xmp_context ctx;
 	ctx = xmp_create_context();
 #endif
-	if (init(
+	if ( init(
 #ifndef __AMIGA__
-		ctx
+			ctx
 #endif
-) < 0) {
+	) < 0 ) {
 		fprintf(stderr, "%s: can't initialize sound\n", argv[0]);
 		exit(1);
 	}
@@ -296,11 +294,11 @@ int main(int argc, const char *argv[])
 
 	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 8, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_HWPALETTE);
 
-	if (screen == nullptr) {
+	if ( screen == nullptr ) {
 		exit(0);
 	}
 
-	SDL_SetPalette(screen,SDL_LOGPAL|SDL_PHYSPAL, colors[0], 0, 256);
+	SDL_SetPalette(screen, SDL_LOGPAL | SDL_PHYSPAL, colors[0], 0, 256);
 
 	star_randomize();
 
@@ -309,12 +307,11 @@ int main(int argc, const char *argv[])
 	SDL_Surface *stars = Hex2Surface(hexstars, 55, 5);
 	SDL_Surface *raveman = Hex2Surface(hexraveman, 320, 200);
 
-#ifndef __AMIGA__
 	font = SDL_DisplayFormat(font);
 	ball = SDL_DisplayFormat(ball);
 	stars = SDL_DisplayFormat(stars);
 	raveman = SDL_DisplayFormat(raveman);
-#endif
+
 	SDL_SetColorKey(font, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(ball, SDL_SRCCOLORKEY, 0);
 	SDL_SetColorKey(stars, SDL_SRCCOLORKEY, 0);
@@ -328,17 +325,19 @@ int main(int argc, const char *argv[])
 	int sin_cnt = 0;
 	int textCnt = 0;
 	int scnCnt = 0;
-	const int sin_pos[] = {4, 4, 5, 6, 7, 8, 10, 12, 14, 16, 19, 22, 25, 28, 32, 36, 40, 44, 49, 54, 59, 65, 71, 77, 83,
-						   89, 94, 99, 104, 109, 113, 117, 121, 125, 128, 131, 134, 137, 139, 141, 143, 145, 146, 147,
-						   148, 149, 149, 149, 149, 148, 147, 146, 145, 143, 141, 139, 137, 134, 131, 128, 125, 121,
-						   117, 113, 109, 104, 99, 94, 89, 83, 77, 71, 65, 59, 54, 49, 44, 40, 36, 32, 28, 25, 22, 19,
-						   16, 14, 12, 10, 8, 7, 6, 5, 4, 4};
+	const int sin_pos[] = {
+			4, 4, 5, 6, 7, 8, 10, 12, 14, 16, 19, 22, 25, 28, 32, 36, 40, 44, 49, 54, 59, 65, 71, 77, 83,
+			89, 94, 99, 104, 109, 113, 117, 121, 125, 128, 131, 134, 137, 139, 141, 143, 145, 146, 147,
+			148, 149, 149, 149, 149, 148, 147, 146, 145, 143, 141, 139, 137, 134, 131, 128, 125, 121,
+			117, 113, 109, 104, 99, 94, 89, 83, 77, 71, 65, 59, 54, 49, 44, 40, 36, 32, 28, 25, 22, 19,
+			16, 14, 12, 10, 8, 7, 6, 5, 4, 4
+	};
 	const int sin_len = sizeof(sin_pos) / sizeof(sin_pos[0]);
 
-	char *tune = (char *) "aurora.mod";
+	char *tune = (char *)"aurora.mod";
 
 #ifndef __AMIGA__
-	if (xmp_load_module_from_memory(ctx, (void *) moddata, moddatalen) < 0) {
+	if ( xmp_load_module_from_memory(ctx, (void *)moddata, moddatalen) < 0 ) {
 		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
 		exit(0);
 	}
@@ -350,26 +349,26 @@ int main(int argc, const char *argv[])
 
 	SDL_PauseAudio(1);
 	int fade = 255, i = 0;
-	SDL_Rect screenWH = {0, 0, WIDTH, HEIGHT};
+	SDL_Rect screenWH = { 0, 0, WIDTH, HEIGHT };
 
-	while (gameRunning) {
+	while ( gameRunning ) {
 		int j = 0;
 		//Start the frame timer
 		fps.start();
 #ifndef __AMIGA
-		if (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
+		if ( SDL_PollEvent(&event)) {
+			if ( event.type == SDL_QUIT ) {
 				gameRunning = false;
 			}
 
-			if (event.type == SDL_KEYDOWN) {
+			if ( event.type == SDL_KEYDOWN ) {
 				SDLKey keyPressed = event.key.keysym.sym;
-				switch (keyPressed) {
+				switch ( keyPressed ) {
 					case SDLK_ESCAPE:
 						gameRunning = false;
 						break;
 					case SDLK_RETURN:
-						if (scnCnt == 0) {
+						if ( scnCnt == 0 ) {
 							scnCnt = 1;
 							scr = -WIDTH;
 							SDL_PauseAudio(0);
@@ -396,33 +395,33 @@ int main(int argc, const char *argv[])
 				break;
 		}
 #endif
-		if (++sin_cnt >= sin_len) sin_cnt = 0;
+		if ( ++sin_cnt >= sin_len ) sin_cnt = 0;
 
-		if ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38) {
+		if ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38 ) {
 			blit(raveman, screen, 0, 0, 0, 0, 320, 200);
 			DrawStars(stars, screen);
-		} else if ((frame / FRAMES_PER_SECOND) > 37) {
+		} else if ((frame / FRAMES_PER_SECOND) > 37 ) {
 			scnCnt = 1;
 			frame = 0;
-		} else if ((frame / FRAMES_PER_SECOND) > 18 && (frame / FRAMES_PER_SECOND) < 28) {
+		} else if ((frame / FRAMES_PER_SECOND) > 18 && (frame / FRAMES_PER_SECOND) < 28 ) {
 
-			if (fade < 1) {
+			if ( fade < 1 ) {
 				fade = 0;
 
 			} else {
 				--fade;
 			}
 
-			SDL_Rect box = {0, 0, WIDTH, 5};
-			for (int v = 0; v < HEIGHT / 5; v++) {
+			SDL_Rect box = { 0, 0, WIDTH, 5 };
+			for ( int v = 0; v < HEIGHT / 5; v++ ) {
 				box.y = v * 5;
-				SDL_FillRect(screen, &box, (int)ceil(rand() / 254)+1);
+				SDL_FillRect(screen, &box, (int)ceil(rand() / 254) + 1);
 			}
 		} else {
 			SDL_FillRect(screen, NULL, 7);
 			DrawStars(stars, screen);
 
-			SDL_Rect box = {0, SCROLLER_Y_TOP / 2, WIDTH, 1};
+			SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
 			uint32_t color = 2;//SDL_MapRGB(screen->format, 0x7e, 0xd7, 0xe7);
 			uint32_t bgcolor = 7;
 			SDL_FillRect(screen, &box, color);
@@ -433,16 +432,16 @@ int main(int argc, const char *argv[])
 			SDL_FillRect(screen, &box, bgcolor);
 		}
 
-		if (scnCnt == 0) {
+		if ( scnCnt == 0 ) {
 			scr = -((WIDTH / 2) - 8 * 8);
-			for (const char &c : SCROLLER_TEXT[textCnt]) {
+			for ( const char &c : SCROLLER_TEXT[textCnt] ) {
 				int fnt = c - 65;
 				int offsetY = 0;
-				int letterX = 16*fnt - (((16 * fnt)/320)*320);
-				int letterY = (int((16 * fnt)/320)*16);
+				int letterX = 16 * fnt - (((16 * fnt) / 320) * 320);
+				int letterY = (int((16 * fnt) / 320) * 16);
 
-				if ((16 * j) - scr < WIDTH && (16 * j) - scr > -16) {
-					blit(font, screen, letterX, letterY, (int) ((16 * j) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
+				if ((16 * j) - scr < WIDTH && (16 * j) - scr > -16 ) {
+					blit(font, screen, letterX, letterY, (int)((16 * j) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
 				}
 
 				j++;
@@ -450,51 +449,51 @@ int main(int argc, const char *argv[])
 
 			DrawText(font, screen, (WIDTH / 2) - ((16 * 11) / 2), SCROLLER_Y_TOP + 32, 16, 16, "PRESS ENTER");
 
-		} else if (scnCnt == 1) {
-			for (const char &c : SCROLLER_TEXT[textCnt]) {
+		} else if ( scnCnt == 1 ) {
+			for ( const char &c : SCROLLER_TEXT[textCnt] ) {
 				int fnt = c - 65;
 				int offsetY = 0;
-				int letterX = 16*fnt - (((16 * fnt)/320)*320);
-				int letterY = (int((16 * fnt)/320)*16);
+				int letterX = 16 * fnt - (((16 * fnt) / 320) * 320);
+				int letterY = (int((16 * fnt) / 320) * 16);
 
 				offsetY = sin_cnt + j;
 
-				if (offsetY >= sin_len)
+				if ( offsetY >= sin_len )
 					offsetY -= sin_len;
 
-				offsetY = (sin_pos[offsetY] - (149 / 2))/2;
+				offsetY = (sin_pos[offsetY] - (149 / 2)) / 2;
 
-				if ((16 * j) - scr < WIDTH && (16 * j) - scr > -16) {
-					blit( font, screen, letterX, letterY, (int) ((16 * j) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
+				if ((16 * j) - scr < WIDTH && (16 * j) - scr > -16 ) {
+					blit(font, screen, letterX, letterY, (int)((16 * j) - scr), SCROLLER_Y_TOP + offsetY - 8, 16, 16);
 				}
 
 				j++;
 			}
 
 			scr = scr + SCROLLER_SPEED;
-			if (scr > SCROLLER_TEXT[textCnt].size() * 32) {
+			if ( scr > SCROLLER_TEXT[textCnt].size() * 32 ) {
 				scr = -WIDTH;
-				if (++textCnt >= SCROLLER_TEXT_LEN) {
+				if ( ++textCnt >= SCROLLER_TEXT_LEN ) {
 					textCnt = 0;
 					++scnCnt;
 				}
 			}
-		} else if (scnCnt == 2) {
+		} else if ( scnCnt == 2 ) {
 			DrawBalls(ball, screen);
-		} else if (scnCnt == 3) {
+		} else if ( scnCnt == 3 ) {
 			DrawText(font, screen, (WIDTH / 2) - ((16 * 7) / 2), SCROLLER_Y_TOP - 8, 16, 16, "LOADING");
 		}
 
-		if ((frame/FRAMES_PER_SECOND) %2 && scnCnt == 2 && ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38)) {
+		if ((frame / FRAMES_PER_SECOND) % 2 && scnCnt == 2 && ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38)) {
 			i++;
-			SDL_SetColors(screen, colors[i%2], 0, 256);
+			SDL_SetColors(screen, colors[i % 2], 0, 256);
 		}
 
 		SDL_Flip(screen);
-		if (scnCnt > 0)
+		if ( scnCnt > 0 )
 			frame++;
 
-		if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
+		if ( fps.get_ticks() < 1000 / FRAMES_PER_SECOND ) {
 
 			SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
 		}

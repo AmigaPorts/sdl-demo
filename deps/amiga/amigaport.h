@@ -8,7 +8,7 @@
 
 #ifndef AMIGAPORT_H
 #define AMIGAPORT_H
- 
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -17,14 +17,16 @@
 
 #define stricmp  strcasecmp
 #define strnicmp strncasecmp
- 
+
 #define paksDir "Paks"
 
 
 //#define MEMTEST 1
 
 void initAmiga();
+
 void borExit(int reset);
+
 void openborMain(int argc, char **argv);
 
 extern char packfile[128];
