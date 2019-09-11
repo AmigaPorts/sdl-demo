@@ -8,7 +8,7 @@ if (VASM)
 	set(CMAKE_ASM_SOURCE_FILE_EXTENSION ".s")
 	set(CMAKE_ASM_OUTPUT_EXTENSION ".o")
 	set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER> <FLAGS> -o <OBJECT> <SOURCE>")
-	set(CMAKE_ASM_FLAGS "-m68030 -I${CMAKE_PREFIX_PATH}/m68k-amigaos/ndk-include -Fhunk")
+	set(CMAKE_ASM_FLAGS "-m68030 -I${CMAKE_SYSROOT}/m68k-amigaos/ndk-include -Fhunk")
 
 	project(ADL ASM C)
 
