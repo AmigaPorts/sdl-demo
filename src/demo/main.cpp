@@ -401,8 +401,16 @@ int main(int argc, const char *argv[])
 		if ( ++sin_cnt >= sin_len ) sin_cnt = 0;
 
 		if ((frame / FRAMES_PER_SECOND) > 27 && (frame / FRAMES_PER_SECOND) < 38 ) {
-			blit(raveman, screen, 0, 0, 0, 0, WIDTH, HEIGHT);
+			SDL_FillRect(screen, NULL, 7);
 			DrawStars(stars, screen);
+			SDL_Rect box = { 0, SCROLLER_Y_TOP / 2, WIDTH, 1 };
+			uint32_t color = 2;
+			SDL_FillRect(screen, &box, color);
+			box.y = SCROLLER_Y_TOP + (SCROLLER_Y_TOP / 2);
+			SDL_FillRect(screen, &box, color);
+			box.y = (SCROLLER_Y_TOP / 2) + 1;
+			box.h = (SCROLLER_Y_TOP) - 1;
+			blit(raveman, screen, box.x, box.y, box.x, box.y, box.w, box.h);
 		} else if ((frame / FRAMES_PER_SECOND) > 37 ) {
 			scnCnt = 1;
 			frame = 0;
@@ -474,7 +482,7 @@ int main(int argc, const char *argv[])
 			}
 
 			scr = scr + SCROLLER_SPEED;
-			if ( scr > SCROLLER_TEXT[textCnt].size() * 32 ) {
+			if ( scr > SCROLLER_TEXT[textCnt].size() * 16 ) {
 				scr = -WIDTH;
 				if ( ++textCnt >= SCROLLER_TEXT_LEN ) {
 					textCnt = 0;

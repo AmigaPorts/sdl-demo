@@ -1,0 +1,3 @@
+[submodule "deps/ADL"]
+	path = deps/ADL
+	url = git@github.com:AmigaPorts/ADL.git
