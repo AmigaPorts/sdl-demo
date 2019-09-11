@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.5)
 
-
 FIND_PROGRAM(VASM vasmm68k_mot)
 if (VASM)
 	# Hack to use VASM to compile the assembly code
@@ -11,7 +10,7 @@ if (VASM)
 	set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER> <FLAGS> -o <OBJECT> <SOURCE>")
 	set(CMAKE_ASM_FLAGS "-m68030 -I${CMAKE_PREFIX_PATH}/m68k-amigaos/ndk-include -Fhunk")
 
-	project(ADL C ASM)
+	project(ADL ASM C)
 
 	set(
 			SOURCES
