@@ -58,6 +58,7 @@ include_directories(
 		${PROJECT_BINARY_DIR}/src/demo/
 )
 
+
 add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS})
 
 if (MORPHOS AND NOT WARPOS)
@@ -65,10 +66,26 @@ if (MORPHOS AND NOT WARPOS)
 elseif (AROS)
 	target_link_libraries(${TARGET_NAME} -lSDL -lxmp)
 elseif (AMIGAOS3)
+	set(68K_CPU -m68030)
+	set(68K_FPU -msoft-float)
 	target_link_libraries(${TARGET_NAME} ADL ptplayer)
 else ()
 	target_link_libraries(${TARGET_NAME} ${SDL_LIBRARY} ${XMP_LIBRARY})
 endif ()
+
+
+
+set(DEMO_FLAGS_DEBUG "-O0 -g ${68K_CPU} ${68K_FPU}")
+set(DEMO_FLAGS_RELEASE "-flto -fwhole-program -O3 -s ${68K_CPU} ${68K_FPU} -ffast-math")
+
+set(CMAKE_C_FLAGS_DEBUG ${DEMO_FLAGS_DEBUG})
+set(CMAKE_CXX_FLAGS_DEBUG ${DEMO_FLAGS_DEBUG})
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG ${DEMO_FLAGS_DEBUG})
+
+set(CMAKE_C_FLAGS_RELEASE ${DEMO_FLAGS_RELEASE})
+set(CMAKE_CXX_FLAGS_RELEASE ${DEMO_FLAGS_RELEASE})
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE ${DEMO_FLAGS_RELEASE})
+
 
 set(INSTALL_DEST ${CMAKE_INSTALL_BINDIR})
 install(TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_DEST})

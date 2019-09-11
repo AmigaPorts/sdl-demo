@@ -12,7 +12,7 @@ uint32_t bmask = 0x00ff0000;
 uint32_t amask = 0xff000000;
 #endif
 
-SDL_Surface *Hex2Surface(const unsigned char image[], int width, int height) {
+SDL_Surface *Hex2Surface(const unsigned char* image, int width, int height) {
 	auto *surface = SDL_CreateRGBSurfaceFrom((void *)image, width, height, 8, width * 1, rmask, gmask, bmask, amask);
 	SDL_SetPalette(surface, SDL_LOGPAL | SDL_PHYSPAL, colors[0], 0, 256);
 	return surface;
