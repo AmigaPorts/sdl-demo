@@ -1,0 +1,17 @@
+//
+// Created by marlon on 9/11/19.
+//
+
+#ifndef VERSION_H
+#define VERSION_H
+
+// 0xXYYZZ = X.YY
+const int VERSION = 0x${VER_X}${VER_YY}${VER_ZZ};
+#ifndef __AMIGA__
+const char VERSION_STRING[] = "${PROJECT_NAME} ${VER_X}.${VER_YY}.${VER_ZZ}";
+#else
+#include <exec/exec.h>
+#define VERSTAG "\0$VER: ${PROJECT_NAME} ${VER_X}.${VER_YY} (${VER_DATE}) asd123\n"
+static const STRPTR __attribute__((used)) ver = (STRPTR)VERSTAG;
+#endif
+#endif //VERSION_H

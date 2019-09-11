@@ -1,10 +1,4 @@
-/*
- * OpenBOR - http://www.LavaLit.com
- * -----------------------------------------------------------------------
- * Licensed under the BSD license, see LICENSE in OpenBOR root for details.
- *
- * Copyright (c) 2004 - 2011 OpenBOR Team
- */
+
 #include <proto/exec.h>
 #include <exec/exec.h>
 #include <stdio.h>

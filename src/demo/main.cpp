@@ -14,6 +14,7 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 
 
 #include <SDL.h>
+#include "version.h"
 
 #if defined(WIN32)
 #undef main
@@ -24,6 +25,7 @@ extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 #include "xmp.h"
 
 #else
+static const char __attribute__((used)) min_stack[] = "$STACK:102400";
 
 #include "Sound.h"
 
@@ -205,6 +207,8 @@ static int init(
 		fprintf(stderr, "%s\n", SDL_GetError());
 		return -1;
 	}
+#else
+
 #endif
 
 	atexit(SDL_Quit);
@@ -338,7 +342,7 @@ int main(int argc, const char *argv[])
 
 #ifndef __AMIGA__
 	if ( xmp_load_module_from_memory(ctx, (void *)moddata, moddatalen) < 0 ) {
-		fprintf(stderr, "%s: error loading %s\n", argv[0], tune);
+		fprintf(stderr, "%s: error loading mod from memory\n", argv[0]);
 		exit(0);
 	}
 

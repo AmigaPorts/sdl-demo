@@ -22,7 +22,6 @@
 #include <proto/cybergraphics.h>
 #include <math.h>
 #include "video.h"
-#include "vga.h"
 #include "amigaport.h"
 #include "timer.h"
 #include "canvas.h"
