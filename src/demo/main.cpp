@@ -65,7 +65,7 @@ const static int STAR_RND[] = { 1, 2, 4, 6 };
 static SDL_Surface *screen;
 const static int ballrec =
 #ifdef __AMIGA__
-		230
+230
 #else
 230
 #endif
@@ -298,7 +298,7 @@ int main(int argc, const char *argv[])
 
 	SDL_ShowCursor(0);
 
-	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 8, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_HWPALETTE);
+	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 8, SDL_SWSURFACE | SDL_FULLSCREEN | SDL_HWPALETTE | SDL_RESIZABLE);
 
 	if ( screen == nullptr ) {
 		exit(0);
@@ -358,7 +358,7 @@ int main(int argc, const char *argv[])
 		int j = 0;
 		//Start the frame timer
 		fps.start();
-#ifndef __AMIGA
+#ifndef __AMIGA__
 		if ( SDL_PollEvent(&event)) {
 			if ( event.type == SDL_QUIT ) {
 				gameRunning = false;
@@ -377,13 +377,16 @@ int main(int argc, const char *argv[])
 							SDL_PauseAudio(0);
 						}
 						break;
+					case SDLK_f:
+						SDL_WM_ToggleFullScreen(screen);
+						break;
 					default:
 						break;
 				}
 			}
 		}
 #else
-		switch ( getKey()) {
+		switch ( getKey() ) {
 			case SDLK_ESCAPE:
 				gameRunning = false;
 				break;

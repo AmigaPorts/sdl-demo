@@ -1,2 +1,8 @@
-convert ../raveman.png -define h:format=gray -depth 8 -size 320x48 ../raveman.h && sed -e 's/MagickImage/hexraveman/g' ../raveman.h> ../src/assets/raveman.h
+convert assets/pics1.png -define png:preserve-colormap=true -define h:format=gray -depth 8 -size 320x48 pics1.h && sed -e 's/MagickImage/hexpics1/g' pics1.h> src/assets/pics1.h
+convert assets/pics1.png -depth 8 -type palette pics1_palette.png
+convert pics1_palette.png -define h:format=colormap -depth 8 -size 320x48 pics1_palette.h && sed -e 's/MagickImage/hexpics1_palette/g' pics1_palette.h> src/assets/pics1_palette.h
+
 xxd -i aurora.mod > src/demo/moddata.h
+
+static const unsigned short hexpics1_width = 640;
+static const unsigned short hexpics1_height = 256;
